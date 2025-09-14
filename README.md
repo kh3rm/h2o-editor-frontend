@@ -1,11 +1,11 @@
-# H2O Editor - Frontend
+# H(2)O Editor - Frontend
 
 <img src="https://react.dev/images/brand/logo_light.svg" alt="React image" width="300" height="300">
 
-This repo contains the [React](https://react.dev/)-centered Frontend-code for the h2o-editor under construction, that is being built as a collaborative effort in the course [DV1677 JSRamverk](https://jsramverk.se/)
+This repo contains the [React](https://react.dev/)-centered Frontend-code for the H(2)O-editor under construction, that is being built as a collaborative effort in the course [DV1677 JSRamverk](https://jsramverk.se/)
 
 
-H2O Editor - Backend
+H(2)O Editor - Backend
 ----------------------------
 
 The corresponding backend-code for the project can be found in the separate repo: [h2o-editor-backend](https://github.com/lohengrin1337/ssr-editor)
