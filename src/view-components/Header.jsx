@@ -3,7 +3,7 @@ function Header() {
     return (
       <>
         <header>
-            <h1><a href="/">H(2)O Document Editor</a></h1>
+          <h1>H(2)O Document Editor</h1>
         </header>
       </>
     );

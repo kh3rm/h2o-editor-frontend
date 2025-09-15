@@ -3,7 +3,7 @@ function Footer() {
     return (
       <>
         <footer>
-            <p class="copyright">&copy; H(2)O Document Editor</p>
+            <p className="copyright">&copy; H(2)O Document Editor</p>
         </footer>
       </>
     );
