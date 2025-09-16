@@ -1,15 +1,13 @@
-{/* Main DocumentEditor-component*/}
 
 import { useState } from 'react';
 import '../App.css';
-import DocumentSaved from './DocumentSaved';
+import SavedDocuments from './SavedDocuments';
 import DocumentForm from './DocumentForm';
 
-{/* DocumentContent intended for showcasing the document content with alternative
-formatting/styling, readonly, not used currently*/}
-
-import DocumentContent from './DocumentContent';
-
+/**
+ * @component DocumentEditor
+ * The main component, brings the document functionality together.
+ */
 function DocumentEditor() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -60,8 +58,8 @@ function DocumentEditor() {
         const documentToDelete = documents[index];
         const isConfirmed = window.confirm(`Are you sure that you want to delete the document titled "${documentToDelete.title}"?`);
 
-        {/* This will look cleaner and more pleasant when we can stop using the index and instead
-            work with a unique id-identifier against the db.*/}
+        // This will look cleaner and more pleasant when we can stop using the index and instead
+        //  work with a unique id-identifier against the db.
 
         if (isConfirmed) {
             setDocuments(prevDocuments =>
@@ -72,7 +70,7 @@ function DocumentEditor() {
     };
 
 
-    {/* Mode-related functions*/}
+    // Mode-related functions
 
 
     const switchToCreateMode = () => {
@@ -91,7 +89,7 @@ function DocumentEditor() {
 
 
 
-    {/* Renders based on the current mode (view, create or update)*/}
+    // Renders based on the current mode (view, create or update)
 
     return (
         <div>
@@ -110,7 +108,7 @@ function DocumentEditor() {
             </div>
 
             {mode === 'view' && (
-                <DocumentSaved
+                <SavedDocuments
                     documents={documents}
                     loadDocument={loadDocument}
                     deleteDocument={deleteDocument}

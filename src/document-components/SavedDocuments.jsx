@@ -1,8 +1,8 @@
-{/* DocumentSaved-component - handles the loading of the saved documents*/}
-
-import React from 'react';
-
-function DocumentSaved({ documents, loadDocument, deleteDocument }) {
+/**
+ * @component SavedDocuments
+ * Handles the loading of the saved documents, for updating or deleting.
+ */
+function SavedDocuments({ documents, loadDocument, deleteDocument }) {
     console.log("Documents saved:", documents);
     return (
         <div className="saved-documents">
@@ -26,4 +26,4 @@ function DocumentSaved({ documents, loadDocument, deleteDocument }) {
     );
 }
 
-export default DocumentSaved;
+export default SavedDocuments;

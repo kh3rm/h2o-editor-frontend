@@ -1,8 +1,7 @@
-{/* DocumentContent-component - for showcasing a document with alternative
-    readonly-formatting, superfluous for the time being*/}
-
-import React from 'react';
-
+/**
+ * @component DocumentContent
+ * Showcase a specific document with alternative readonly-formatting, not used as of now.
+ */
 function DocumentContent({ title, content }) {
     return (
         <div className="document-container">

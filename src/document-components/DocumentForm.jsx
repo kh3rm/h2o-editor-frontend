@@ -1,7 +1,7 @@
-{/* DocumentForm-component - handles the create/update-forms*/}
-
-import React from 'react';
-
+/**
+ * @component DocumentForm
+ * Handles the loading of the document-form, for document creation or update.
+ */
 function DocumentForm({ title, setTitle, content, handleContentChange, createDocument, updateDocument, updateIndex }) {
     return (
         <div className="document-grid">
