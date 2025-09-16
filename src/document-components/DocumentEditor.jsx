@@ -15,7 +15,7 @@ function DocumentEditor() {
     const [updateIndex, setUpdateIndex] = useState(null);
     const [mode, setMode] = useState('view');
 
-    const clear = () => {
+    const resetState = () => {
         setTitle("");
         setContent("");
         setUpdateIndex(null);
@@ -30,7 +30,7 @@ function DocumentEditor() {
         }
         const newDocument = { title, content };
         setDocuments(prevDocuments => [...prevDocuments, newDocument]);
-        clear();
+        resetState();
     };
 
     const loadDocument = (index) => {
@@ -50,7 +50,7 @@ function DocumentEditor() {
                     index === updateIndex ? updatedDocument : doc
                 )
             );
-            clear();
+            resetState();
         }
     };
 
@@ -65,7 +65,7 @@ function DocumentEditor() {
             setDocuments(prevDocuments =>
                 prevDocuments.filter((_, i) => i !== index)
             );
-            if (updateIndex === index) clear();
+            if (updateIndex === index) resetState();
         }
     };
 
@@ -74,12 +74,12 @@ function DocumentEditor() {
 
 
     const switchToCreateMode = () => {
-        clear();
+        resetState();
         setMode('create');
     };
 
     const switchToViewMode = () => {
-        clear();
+        resetState();
         setMode('view');
     };
 
