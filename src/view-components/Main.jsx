@@ -1,9 +1,12 @@
 import DocumentEditor from '../document-components/DocumentEditor'
+import { DocumentProvider } from '../document-components/DocumentContext';
 function Main() {
     return (
         <>
             <div className="main">
-                <DocumentEditor/>
+                <DocumentProvider>
+                    <DocumentEditor />
+                </DocumentProvider>
             </div>
         </>
     );
