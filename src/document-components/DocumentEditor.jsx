@@ -1,130 +1,42 @@
-
-import { useState } from 'react';
-import '../App.css';
+import { useDocumentContext } from './DocumentContext';
 import SavedDocuments from './SavedDocuments';
 import DocumentForm from './DocumentForm';
 
 /**
  * @component DocumentEditor
- * The main component, brings the document functionality together.
+ * The main component that brings the document functionality together.
  */
 function DocumentEditor() {
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [documents, setDocuments] = useState([]);
-    const [updateIndex, setUpdateIndex] = useState(null);
-    const [mode, setMode] = useState('view');
-
-    const resetState = () => {
-        setTitle("");
-        setContent("");
-        setUpdateIndex(null);
-        setMode('view');
-    };
-
-    const createDocument = (e) => {
-        e.preventDefault();
-        if (!title.trim() || !content.trim()) {
-            alert("Neither the Title- or Content-fields are allowed to be empty.");
-            return;
-        }
-        const newDocument = { title, content };
-        setDocuments(prevDocuments => [...prevDocuments, newDocument]);
-        resetState();
-    };
-
-    const loadDocument = (index) => {
-        const selectedDocument = documents[index];
-        setTitle(selectedDocument.title);
-        setContent(selectedDocument.content);
-        setUpdateIndex(index);
-        setMode('update');
-    };
-
-    const updateDocument = (e) => {
-        e.preventDefault();
-        if (updateIndex !== null) {
-            const updatedDocument = { title, content };
-            setDocuments(prevDocuments =>
-                prevDocuments.map((doc, index) =>
-                    index === updateIndex ? updatedDocument : doc
-                )
-            );
-            resetState();
-        }
-    };
-
-    const deleteDocument = (index) => {
-        const documentToDelete = documents[index];
-        const isConfirmed = window.confirm(`Are you sure that you want to delete the document titled "${documentToDelete.title}"?`);
-
-        // This will look cleaner and more pleasant when we can stop using the index and instead
-        //  work with a unique id-identifier against the db.
-
-        if (isConfirmed) {
-            setDocuments(prevDocuments =>
-                prevDocuments.filter((_, i) => i !== index)
-            );
-            if (updateIndex === index) resetState();
-        }
-    };
-
-
-    // Mode-related functions
-
-
-    const switchToCreateMode = () => {
-        resetState();
-        setMode('create');
-    };
-
-    const switchToViewMode = () => {
-        resetState();
-        setMode('view');
-    };
-
-    const handleBackClick = () => {
-        switchToViewMode();
-    };
-
-
-
-    // Renders based on the current mode (view, create or update)
+    const {
+        mode,
+        switchToCreateMode,
+        switchToViewMode,
+    } = useDocumentContext();
 
     return (
         <div>
-            <div className="toolbar">
+            {/* Conditional rendering of the correct top button based on mode:*/}
+
+            <div className="top-button">
                 {mode === 'view' && (
                     <button onClick={switchToCreateMode} className="create-button">
                         + New Document
                     </button>
                 )}
                 {(mode === 'create' || mode === 'update') && (
-                    <button onClick={handleBackClick} className="back-button"  type="button">
+                    <button onClick={switchToViewMode} className="back-button" type="button">
                         🢨 Back
                     </button>
                 )}
                 <br />
             </div>
 
-            {mode === 'view' && (
-                <SavedDocuments
-                    documents={documents}
-                    loadDocument={loadDocument}
-                    deleteDocument={deleteDocument}
-                />
-            )}
+            {/* Conditional rendering of the correct Document Component based on mode:*/}
 
-            {(mode === 'create' || mode === 'update') && (
-                <DocumentForm
-                    title={title}
-                    setTitle={setTitle}
-                    content={content}
-                    handleContentChange={setContent}
-                    createDocument={createDocument}
-                    updateDocument={updateDocument}
-                    updateIndex={updateIndex}
-                />
+            {mode === 'view' ? (
+                <SavedDocuments />
+            ) : (mode === 'create' || mode === 'update') && (
+                <DocumentForm />
             )}
         </div>
     );

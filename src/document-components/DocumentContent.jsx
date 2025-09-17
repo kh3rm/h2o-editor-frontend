@@ -1,8 +1,13 @@
+import { useDocumentContext } from './DocumentContext';
+
 /**
  * @component DocumentContent
  * Showcase a specific document with alternative readonly-formatting, not used as of now.
  */
-function DocumentContent({ title, content }) {
+function DocumentContent() {
+
+    const { title, content } = useDocumentContext();
+
     return (
         <div className="document-container">
             <h1>{title}</h1>
