@@ -1,6 +1,6 @@
 /**
  * This DocumentContext-setup enables easy and consistent access to all the
- * relevant state-variables and helper functions to the Document Components,
+ * relevant state-variables and helper functions for the Document Components,
  * cleaning up the code considerably, drastically reducing the need to feed them props
  * (in fact, in this current implementation at least, feeding them none(!) ).
  *
