@@ -1,9 +1,16 @@
+import { useDocumentContext } from './DocumentContext';
+
 /**
  * @component SavedDocuments
- * Handles the loading of the saved documents, for updating or deleting.
+ * Handles the loading of the saved documents, for updating/viewing or deleting.
  */
-function SavedDocuments({ documents, loadDocument, deleteDocument }) {
-    console.log("Documents saved:", documents);
+function SavedDocuments() {
+    const {
+        documents,
+        loadDocument,
+        deleteDocument
+    } = useDocumentContext();
+
     return (
         <div className="saved-documents">
             <h2 className="saved-documents-h2">Saved Documents</h2>
@@ -20,7 +27,6 @@ function SavedDocuments({ documents, loadDocument, deleteDocument }) {
                         </button>
                     </div>
                 ))}
-
             </div>
         </div>
     );
