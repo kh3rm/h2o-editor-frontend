@@ -2,7 +2,8 @@ name: Deploy To-Do App to GitHub Pages
 on:
   push:
     branches:
-      - main
+      #- main
+      - refactoring
 permissions:
   contents: write
 jobs:
