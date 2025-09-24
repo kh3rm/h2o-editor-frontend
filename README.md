@@ -21,4 +21,4 @@ About the original build-template
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Vitejs-logo.svg" alt="Vite image" width="215" height="215">
 
-The initial template was provided by [Vite](https://vite.dev/), which offers up a clean, fast, minimal and slim setup to get React up and running with HMR and some ESLint rules.
+The initial template was provided by [Vite](https://vite.dev/), which offers up a clean, fast, minimal and slim setup to get React up and running with HMR and some ESLint rules..
