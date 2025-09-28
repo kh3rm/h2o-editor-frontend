@@ -25,7 +25,7 @@ function DocumentEditor() {
                 )}
                 {(mode === 'create' || mode === 'update') && (
                     <button onClick={switchToViewMode} className="back-button" type="button">
-                        🢨 Back
+                        ← Back
                     </button>
                 )}
                 <br />

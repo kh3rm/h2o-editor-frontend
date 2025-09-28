@@ -16,17 +16,15 @@ function SavedDocuments() {
             <h2 className="saved-documents-h2">Saved Documents</h2>
             <div className="document-buttons-container">
 
-                {/* Temporary usage of index here for the key until actual backend implementation,
-                a db-unique-id is preferable*/}
-
-                {documents.map((doc, index) => (
-                    <div key={index} className="document-button-container">
-                        <button className="document-button" onClick={() => loadDocument(index)}>
+                {Array.isArray(documents.data) && documents.data.map(doc => (
+                    <div key={doc._id} className="document-button-container">
+                        <button className="document-button" onClick={() => loadDocument(doc._id)}>
                             {doc.title}
-                            <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(index); }}>☒</span>
+                            <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(doc._id); }}>☒</span>
                         </button>
                     </div>
                 ))}
+
             </div>
         </div>
     );

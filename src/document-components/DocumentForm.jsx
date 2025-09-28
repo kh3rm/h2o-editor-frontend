@@ -12,7 +12,8 @@ function DocumentForm() {
         setContent,
         createDocument,
         updateDocument,
-        updateIndex,
+        updateId,
+        mode
     } = useDocumentContext();
 
     return (
@@ -29,12 +30,13 @@ function DocumentForm() {
             <label htmlFor="content">Content</label>
             <textarea
                 id="content"
+                name="content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
             ></textarea>
 
-            <button onClick={updateIndex === null ? createDocument : updateDocument}>
-                {updateIndex === null ? "Create New Document" : "Update Document"}
+            <button onClick={updateId === null ? createDocument : updateDocument}>
+                {updateId === null ? "Create New Document" : "Update Document"}
             </button>
 
             <br />

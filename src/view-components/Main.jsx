@@ -5,7 +5,7 @@ function Main() {
         <>
             <div className="main">
                 <DocumentProvider>
-                    <DocumentEditor />
+                    <DocumentEditor/>
                 </DocumentProvider>
             </div>
         </>
