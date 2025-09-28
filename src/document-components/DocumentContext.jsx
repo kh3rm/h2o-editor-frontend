@@ -35,7 +35,7 @@ export const DocumentProvider = ({ children }) => {
   }, []);
 
   /**
-   * Fetches all the documents from the backend and populates the documents state
+   * Fetches all the documents from the backend and populates the documents state.
    * 
    * @async
    * @throws                    Error if the fetch-operation fails
@@ -125,10 +125,10 @@ export const DocumentProvider = ({ children }) => {
   };
 
   /**
-   * Delete a document by id after user confirmation
+   * Delete a document based on its id after user confirmation.
    * 
-   * Uses the locally stored document list to showcase the document title
-   * for confirmation purposes before sending the delete request to the backend.
+   * Uses the documents state to showcase the document title for confirmation purposes 
+   * before sending the delete request to the backend.
    * 
    * Might be handled more ideally in the future (implementing a web-socket-solution).
    * 
@@ -165,7 +165,7 @@ export const DocumentProvider = ({ children }) => {
   /**
    * Load a document based on its id and populate the state title and content.
    * 
-   * It makes sure to retrieve the latest version from backend rather than relying on 
+   * It makes sure to retrieve the latest version from the backend rather than relying on 
    * the local documents state.
    * 
    * Handling could be improved with eventual web-socket-implementation in the project.
@@ -192,7 +192,7 @@ export const DocumentProvider = ({ children }) => {
   };
 
   /**
-   * Resets the document-related state
+   * Resets the document-related state.
    * 
    * Clears title and content state, nullifies the updateId, and fetches and updates the
    * documents-state from backend, to keep the documents fresh and up to date.
