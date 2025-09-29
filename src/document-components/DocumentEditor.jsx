@@ -1,3 +1,4 @@
+import React from 'react';
 import { useDocumentContext } from './DocumentContext';
 import SavedDocuments from './SavedDocuments';
 import DocumentForm from './DocumentForm';
@@ -17,16 +18,12 @@ function DocumentEditor() {
         <div>
             {/* Conditional rendering of the correct top button based on mode:*/}
 
-            <div className="top-button">
+            <div className="top-button-container">
                 {mode === 'view' && (
-                    <button onClick={switchToCreateMode} className="create-button">
-                        + New Document
-                    </button>
+                    <button onClick={switchToCreateMode} className="top-button create-button">+ New Document</button>
                 )}
                 {(mode === 'create' || mode === 'update') && (
-                    <button onClick={switchToViewMode} className="back-button" type="button">
-                        ← Back
-                    </button>
+                    <button onClick={switchToViewMode} className="top-button back-button" type="button">← Back</button>
                 )}
                 <br />
             </div>
