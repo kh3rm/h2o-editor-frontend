@@ -3,11 +3,11 @@ import { DocumentProvider } from '../document-components/DocumentContext';
 function Main() {
     return (
         <>
-            <div className="main">
+            <main>
                 <DocumentProvider>
                     <DocumentEditor/>
                 </DocumentProvider>
-            </div>
+            </main>
         </>
     );
 }

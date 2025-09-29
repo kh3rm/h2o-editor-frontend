@@ -1,3 +1,4 @@
+import React from 'react';
 import { useDocumentContext } from './DocumentContext';
 
 /**
@@ -35,7 +36,7 @@ function DocumentForm() {
                 onChange={(e) => setContent(e.target.value)}
             ></textarea>
 
-            <button onClick={updateId === null ? createDocument : updateDocument}>
+            <button className="document-form-button" onClick={updateId === null ? createDocument : updateDocument}>
                 {updateId === null ? "Create New Document" : "Update Document"}
             </button>
 

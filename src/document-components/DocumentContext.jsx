@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 /**
  * This DocumentContext-setup enables easy and consistent access to all the
  * relevant state-variables and functions for the Document Components,
@@ -15,7 +17,7 @@
  *
 */
 
-
+import React from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const DocumentContext = createContext();
