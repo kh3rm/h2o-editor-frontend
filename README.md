@@ -1,7 +1,8 @@
 # H(2)O Editor - Frontend
 
 
-![Build Status](https://github.com/kh3rm/h2o-editor-frontend/actions/workflows/ci-test-frontend.yml/badge.svg)
+[![Build Status](https://github.com/kh3rm/h2o-editor-frontend/actions/workflows/ci-test-frontend.yml/badge.svg)](https://github.com/kh3rm/h2o-editor-frontend/actions/workflows/ci-test-frontend.yml)
+
 
 
 <img src="https://react.dev/images/brand/logo_light.svg" alt="React image" width="300" height="300">
