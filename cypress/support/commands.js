@@ -29,6 +29,7 @@
 Cypress.Commands.add('renderHeaderFooter', () => {
     // Header / Footer should render and persist as is throughout, hence the use of
     // this custom command for easy inclusion.
+    console.log('HeaderFooter-render-console-log')
 
     // ___________________________________________________________________________________________
     

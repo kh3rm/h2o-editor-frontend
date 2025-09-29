@@ -1,0 +1,38 @@
+name: CI - Jest & Cypress Frontend-Tests
+
+on:
+  push:
+    branches: [main, refactoring, refactoring-temp]
+  pull_request:
+    branches: [main, refactoring, refactoring-temp]
+    types: [opened, synchronize]
+
+jobs:
+  ci_testing_jest_cypress:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Jest Testing Suite (--verbose and --coverage)
+        run: npm run test
+
+      - name: Run Cypress Component Tests
+        run: npm run test:component
