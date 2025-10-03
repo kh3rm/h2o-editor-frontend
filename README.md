@@ -1,9 +1,19 @@
 # H(2)O Editor - Frontend
 
+
+[![Build Status](https://github.com/kh3rm/h2o-editor-frontend/actions/workflows/ci-test-frontend.yml/badge.svg)](https://github.com/kh3rm/h2o-editor-frontend/actions/workflows/ci-test-frontend.yml)
+
+
+
 <img src="https://react.dev/images/brand/logo_light.svg" alt="React image" width="300" height="300">
 
 This repo contains the [React](https://react.dev/)-centered Frontend-code for the H(2)O-editor under construction, that is being built as a collaborative effort in the course [DV1677 JSRamverk](https://jsramverk.se/)
 
+
+Deployed Links
+---------
+- [Deployed Frontend React App](https://kh3rm.github.io/h2o-editor-frontend/)
+- [Deployed Backend Express API](https://h2o-editor-oljn22.azurewebsites.net/)
 
 H(2)O Editor - Backend
 ----------------------------
