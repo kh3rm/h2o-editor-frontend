@@ -23,230 +23,230 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const DocumentContext = createContext();
 
 export const DocumentProvider = ({ children }) => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [documents, setDocuments] = useState([]);
-  const [updateId, setUpdateId] = useState(null);
-  const [mode, setMode] = useState('view');
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [documents, setDocuments] = useState([]);
+    const [updateId, setUpdateId] = useState(null);
+    const [mode, setMode] = useState('view');
 
-  const H2O_EXPRESS_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/documents';
+    const H2O_EXPRESS_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/documents';
 
-  // Fetches the documents once on initiation
-  useEffect(() => {
-      getAllDocuments();
-  }, []);
+    // Fetches the documents once on initiation
+    useEffect(() => {
+        getAllDocuments();
+    }, []);
 
-  /**
-   * Fetches all the documents from the backend and populates the documents state.
-   * 
-   * @async
-   * @throws                    Error if the fetch-operation fails
-   * @returns {Promise<void>}
-   */
-  const getAllDocuments = async () => {
-      try {
-          const res = await fetch(H2O_EXPRESS_API_URI);
-          if (!res.ok) throw new Error('Sorry, could not retrieve the documents.');
-          const data = await res.json();
-          setDocuments(data);
-      } catch (err) {
-          console.error('Fetch error:', err);
-      }
-  };
+    /**
+     * Fetches all the documents from the backend and populates the documents state.
+     * 
+     * @async
+     * @throws                    Error if the fetch-operation fails
+     * @returns {Promise<void>}
+     */
+    const getAllDocuments = async () => {
+        try {
+            const res = await fetch(H2O_EXPRESS_API_URI);
+            if (!res.ok) throw new Error('Sorry, could not retrieve the documents.');
+            const data = await res.json();
+            setDocuments(data);
+        } catch (err) {
+            console.error('Fetch error:', err);
+        }
+    };
 
-  /**
-   * Create a new document with the current state title and content (i.e: the filled out forms)
-   * 
-   * @async
-   * @throws                    Error if the create-operation fails
-   * @returns {Promise<void>}
-   */
-  const createDocument = async () => {
-      if (!title.trim() || !content.trim()) {
-          alert("Neither the Title nor Content fields can be empty.");
-          return;
-      }
+    /**
+     * Create a new document with the current state title and content (i.e: the filled out forms)
+     * 
+     * @async
+     * @throws                    Error if the create-operation fails
+     * @returns {Promise<void>}
+     */
+    const createDocument = async () => {
+        if (!title.trim() || !content.trim()) {
+            alert("Neither the Title nor Content fields can be empty.");
+            return;
+        }
 
-      const newDoc = { title, content };
+        const newDoc = { title, content };
 
-      try {
-          const res = await fetch(`${H2O_EXPRESS_API_URI}/create`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(newDoc),
-          });
+        try {
+            const res = await fetch(`${H2O_EXPRESS_API_URI}/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newDoc),
+            });
 
-          if (!res.ok) throw new Error('Failed to create document');
+            if (!res.ok) throw new Error('Failed to create document');
 
-          const savedDoc = await res.json();
+            const savedDoc = await res.json();
 
-          console.log("Created document", savedDoc);
+            console.log("Created document", savedDoc);
 
-          switchToViewMode();
-      } catch (err) {
-          console.error('Create error:', err);
-      }
-  };
+            switchToViewMode();
+        } catch (err) {
+            console.error('Create error:', err);
+        }
+    };
 
-  /**
-   * Update an existing document based on the state updateId, title and content
-   * (i.e: the filled out forms and the chosen document's id (updateId))
-   * 
-   * @async
-   * @throws                    Error if update-operation fails
-   * @returns {Promise<void>}
-   */
-  const updateDocument = async () => {
-      if (!updateId) return;
+    /**
+     * Update an existing document based on the state updateId, title and content
+     * (i.e: the filled out forms and the chosen document's id (updateId))
+     * 
+     * @async
+     * @throws                    Error if update-operation fails
+     * @returns {Promise<void>}
+     */
+    const updateDocument = async () => {
+        if (!updateId) return;
 
-      if (!title.trim() || !content.trim()) {
-        alert("Neither the Title nor Content fields can be empty.");
-        return;
-      }
+        if (!title.trim() || !content.trim()) {
+            alert("Neither the Title nor Content fields can be empty.");
+            return;
+        }
 
-      const updatedDocument = {
-          id: updateId,
-          title,
-          content,
-      };
+        const updatedDocument = {
+            id: updateId,
+            title,
+            content,
+        };
 
-      try {
-          const res = await fetch(`${H2O_EXPRESS_API_URI}/update`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(updatedDocument),
-          });
+        try {
+            const res = await fetch(`${H2O_EXPRESS_API_URI}/update`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedDocument),
+            });
 
-          if (!res.ok) throw new Error(`Failed to update the document with the id ${updateId}`);
+            if (!res.ok) throw new Error(`Failed to update the document with the id ${updateId}`);
 
-          switchToViewMode();
+            switchToViewMode();
 
-      } catch (err) {
-          console.error('Update error:', err);
-      }
-  };
+        } catch (err) {
+            console.error('Update error:', err);
+        }
+    };
 
-  /**
-   * Delete a document based on its id after user confirmation.
-   * 
-   * Uses the documents state to showcase the document title for confirmation purposes 
-   * before sending the delete request to the backend.
-   * 
-   * Might be handled more ideally in the future (implementing a web-socket-solution).
-   * 
-   * @async
-   * @param {string} deleteId    The document-id
-   * @throws                     Error if the delete-operation fails
-   * @returns {Promise<void>}
-   */
-  const deleteDocument = async (deleteId) => {
-      const documentToDelete = documents.data.find(doc => doc._id === deleteId);
+    /**
+     * Delete a document based on its id after user confirmation.
+     * 
+     * Uses the documents state to showcase the document title for confirmation purposes 
+     * before sending the delete request to the backend.
+     * 
+     * Might be handled more ideally in the future (implementing a web-socket-solution).
+     * 
+     * @async
+     * @param {string} deleteId    The document-id
+     * @throws                     Error if the delete-operation fails
+     * @returns {Promise<void>}
+     */
+    const deleteDocument = async (deleteId) => {
+        const documentToDelete = documents.data.find(doc => doc._id === deleteId);
 
-      const isConfirmed = window.confirm(
-          `Are you sure that you want to delete the document titled "${documentToDelete.title}"?`
-      );
+        const isConfirmed = window.confirm(
+            `Are you sure that you want to delete the document titled "${documentToDelete.title}"?`
+        );
 
-      if (isConfirmed) {
-          try {
-              const res = await fetch(`${H2O_EXPRESS_API_URI}/delete`, {
-                  method: 'DELETE',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ id: deleteId }),
-              });
+        if (isConfirmed) {
+            try {
+                const res = await fetch(`${H2O_EXPRESS_API_URI}/delete`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: deleteId }),
+                });
 
-              if (!res.ok) throw new Error('Failed to delete the requested document');
+                if (!res.ok) throw new Error('Failed to delete the requested document');
 
-              console.log('Deleted document-id:', deleteId);
-              switchToViewMode();
-          } catch (err) {
-              console.error('Delete error:', err);
-          }
-      }
-  };
+                console.log('Deleted document-id:', deleteId);
+                switchToViewMode();
+            } catch (err) {
+                console.error('Delete error:', err);
+            }
+        }
+    };
 
-  /**
-   * Load a document based on its id and populate the state title and content.
-   * 
-   * It makes sure to retrieve the latest version from the backend rather than relying on 
-   * the local documents state.
-   * 
-   * Handling could be improved with eventual web-socket-implementation in the project.
-   * 
-   * @async
-   * @param {string} id         Document ID
-   * @throws                     Error if the retrieval fails
-   * @returns {Promise<void>}
-   */
-  const loadDocument = async (id) => {
-      try {
-          const res = await fetch(`${H2O_EXPRESS_API_URI}/${id}`);
-          if (!res.ok) throw new Error(`Failed to fetch the document with the id: ${id}`);
+    /**
+     * Load a document based on its id and populate the state title and content.
+     * 
+     * It makes sure to retrieve the latest version from the backend rather than relying on 
+     * the local documents state.
+     * 
+     * Handling could be improved with eventual web-socket-implementation in the project.
+     * 
+     * @async
+     * @param {string} id         Document ID
+     * @throws                     Error if the retrieval fails
+     * @returns {Promise<void>}
+     */
+    const loadDocument = async (id) => {
+        try {
+            const res = await fetch(`${H2O_EXPRESS_API_URI}/${id}`);
+            if (!res.ok) throw new Error(`Failed to fetch the document with the id: ${id}`);
 
-          const selectedDocument = await res.json();
+            const selectedDocument = await res.json();
 
-          setTitle(selectedDocument.data.title);
-          setContent(selectedDocument.data.content);
-          setUpdateId(id);
-          setMode('update');
-      } catch (err) {
-          console.error('Load Document Error:', err);
-      }
-  };
+            setTitle(selectedDocument.data.title);
+            setContent(selectedDocument.data.content);
+            setUpdateId(id);
+            setMode('update');
+        } catch (err) {
+            console.error('Load Document Error:', err);
+        }
+    };
 
-  /**
-   * Resets the document-related state.
-   * 
-   * Clears title and content state, nullifies the updateId, and fetches and updates the
-   * documents-state from backend, to keep the documents fresh and up to date.
-   */
-  const resetState = () => {
-      setTitle('');
-      setContent('');
-      setUpdateId(null);
-      getAllDocuments();
-  };
+    /**
+     * Resets the document-related state.
+     * 
+     * Clears title and content state, nullifies the updateId, and fetches and updates the
+     * documents-state from backend, to keep the documents fresh and up to date.
+     */
+    const resetState = () => {
+        setTitle('');
+        setContent('');
+        setUpdateId(null);
+        getAllDocuments();
+    };
 
-  /**
-   * Resets state and sets mode to 'create'.
-   */
-  const switchToCreateMode = () => {
-      resetState();
-      setMode('create');
-  };
+    /**
+     * Resets state and sets mode to 'create'.
+     */
+    const switchToCreateMode = () => {
+        resetState();
+        setMode('create');
+    };
 
-  /**
-   * Resets state and sets mode to the default 'view'.
-   */
-  const switchToViewMode = () => {
-      resetState();
-      setMode('view');
-  };
+    /**
+     * Resets state and sets mode to the default 'view'.
+     */
+    const switchToViewMode = () => {
+        resetState();
+        setMode('view');
+    };
 
-  // Log all the mode-changes (dev)
-  useEffect(() => {
-      console.log(mode);
-  }, [mode]);
+    // Log all the mode-changes (dev)
+    useEffect(() => {
+        console.log(mode);
+    }, [mode]);
 
-  return (
-      <DocumentContext.Provider
-          value={{
-              title,
-              setTitle,
-              content,
-              setContent,
-              createDocument,
-              updateDocument,
-              updateId,
-              deleteDocument,
-              loadDocument,
-              documents,
-              mode,
-              switchToCreateMode,
-              switchToViewMode,
-          }}>
-          {children}
-      </DocumentContext.Provider>
-  );
+    return (
+        <DocumentContext.Provider
+            value={{
+                title,
+                setTitle,
+                content,
+                setContent,
+                createDocument,
+                updateDocument,
+                updateId,
+                deleteDocument,
+                loadDocument,
+                documents,
+                mode,
+                switchToCreateMode,
+                switchToViewMode,
+            }}>
+            {children}
+        </DocumentContext.Provider>
+    );
 };
 
 /**
