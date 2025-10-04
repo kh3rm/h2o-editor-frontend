@@ -29,7 +29,9 @@ export const DocumentProvider = ({ children }) => {
     const [updateId, setUpdateId] = useState(null);
     const [mode, setMode] = useState('view');
 
-    const H2O_EXPRESS_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/documents';
+    // const H2O_EXPRESS_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/documents';
+    const H2O_EXPRESS_API_URI = 'http://localhost:3000/documents';
+    const H2O_GRAPHQL_API_URI = 'http://localhost:3000/graphql';
 
     // Fetches the documents once on initiation
     useEffect(() => {
@@ -44,15 +46,40 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
     const getAllDocuments = async () => {
+        // Query for all documents and their _id, title and content
+        const query = `
+            query GetDocs {
+                documents {
+                    _id
+                    title
+                    content
+                }
+            }
+        `;
+
         try {
-            const res = await fetch(H2O_EXPRESS_API_URI);
+            const res = await fetch(H2O_GRAPHQL_API_URI, {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json"
+                // "Authorization": "Bearer <token>"
+                },
+                body: JSON.stringify({ query })
+            });
+
             if (!res.ok) throw new Error('Sorry, could not retrieve the documents.');
-            const data = await res.json();
-            setDocuments(data);
+    
+            let json = await res.json();
+            console.log(json);  // graphQL json structure
+
+            // TODO: Let setDocuments recieve the documents array directly
+            json = { data: json.data.documents }    // to fit old json-api structure
+            setDocuments(json);
         } catch (err) {
             console.error('Fetch error:', err);
         }
     };
+
 
     /**
      * Create a new document with the current state title and content (i.e: the filled out forms)
@@ -178,15 +205,41 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
     const loadDocument = async (id) => {
+        // Query for one document and its _id, title and content
+        const query = `
+            query GetDoc($id: ID!) {
+                document(id: $id) {
+                    _id
+                    title
+                    content
+                }
+            }
+        `;
+
+        // Variables for query
+        const variables = {
+            id: id
+        }
+
         try {
-            const res = await fetch(`${H2O_EXPRESS_API_URI}/${id}`);
+            const res = await fetch(H2O_GRAPHQL_API_URI, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                    // "Authorization": "Bearer <token>"
+                },
+                body: JSON.stringify({ query, variables })
+            });
+
             if (!res.ok) throw new Error(`Failed to fetch the document with the id: ${id}`);
 
-            const selectedDocument = await res.json();
+            const json = await res.json();
+            console.log(json);  // graphQL json structure
+            const selectedDocument = json.data.document;
 
-            setTitle(selectedDocument.data.title);
-            setContent(selectedDocument.data.content);
-            setUpdateId(id);
+            setTitle(selectedDocument.title);
+            setContent(selectedDocument.content);
+            setUpdateId(selectedDocument._id);
             setMode('update');
         } catch (err) {
             console.error('Load Document Error:', err);
