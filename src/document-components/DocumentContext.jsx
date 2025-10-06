@@ -20,6 +20,7 @@
 import React from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { graphQLClient } from '../graphql/client';
+import { queries } from "../graphql/queries/provider";
 
 const DocumentContext = createContext();
 
@@ -47,19 +48,8 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
     const getAllDocuments = async () => {
-        // Query for all documents and their _id, title and content
-        const query = `
-            query GetDocs {
-                documents {
-                    _id
-                    title
-                    content
-                }
-            }
-        `;
-
         try {
-            const res = await graphQLClient.query(query);
+            const res = await graphQLClient.query(queries.GetDocuments);
 
             if (!res.ok) throw new Error('Sorry, could not retrieve the documents.');
     
@@ -199,24 +189,8 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
     const loadDocument = async (id) => {
-        // Query for one document and its _id, title and content
-        const query = `
-            query GetDoc($id: ID!) {
-                document(id: $id) {
-                    _id
-                    title
-                    content
-                }
-            }
-        `;
-
-        // Variables for query
-        const variables = {
-            id: id
-        }
-
         try {
-            const res = await graphQLClient.query(query, variables);
+            const res = await graphQLClient.query(queries.GetDocument, { id: id });
 
             if (!res.ok) throw new Error(`Failed to fetch the document with the id: ${id}`);
 
