@@ -19,6 +19,7 @@
 
 import React from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
+import { graphQLClient } from '../graphql/client';
 
 const DocumentContext = createContext();
 
@@ -58,14 +59,7 @@ export const DocumentProvider = ({ children }) => {
         `;
 
         try {
-            const res = await fetch(H2O_GRAPHQL_API_URI, {
-                method: "POST",
-                headers: {
-                "Content-Type": "application/json"
-                // "Authorization": "Bearer <token>"
-                },
-                body: JSON.stringify({ query })
-            });
+            const res = await graphQLClient.query(query);
 
             if (!res.ok) throw new Error('Sorry, could not retrieve the documents.');
     
@@ -222,14 +216,7 @@ export const DocumentProvider = ({ children }) => {
         }
 
         try {
-            const res = await fetch(H2O_GRAPHQL_API_URI, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                    // "Authorization": "Bearer <token>"
-                },
-                body: JSON.stringify({ query, variables })
-            });
+            const res = await graphQLClient.query(query, variables);
 
             if (!res.ok) throw new Error(`Failed to fetch the document with the id: ${id}`);
 
