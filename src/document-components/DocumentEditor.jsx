@@ -10,8 +10,8 @@ import DocumentForm from './DocumentForm';
 function DocumentEditor() {
     const {
         mode,
-        switchToCreateMode,
         switchToViewMode,
+        createDocument
     } = useDocumentContext();
 
     return (
@@ -20,7 +20,7 @@ function DocumentEditor() {
 
             <div className="top-button-container">
                 {mode === 'view' && (
-                    <button onClick={switchToCreateMode} className="top-button create-button">+ New Document</button>
+                    <button onClick={createDocument} className="top-button create-button">+ New Document</button>
                 )}
                 {(mode === 'create' || mode === 'update') && (
                     <button onClick={switchToViewMode} className="top-button back-button" type="button">← Back</button>

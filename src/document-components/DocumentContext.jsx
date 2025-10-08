@@ -21,6 +21,7 @@ import React from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { graphQLClient } from '../graphql/client';
 import { queries } from "../graphql/queries/provider";
+import { mutations } from "../graphql/mutations/provider";
 
 const DocumentContext = createContext();
 
@@ -53,12 +54,12 @@ export const DocumentProvider = ({ children }) => {
 
             if (!res.ok) throw new Error('Sorry, could not retrieve the documents.');
     
-            let json = await res.json();
+            const json = await res.json();
             console.log(json);  // graphQL json structure
 
             // TODO: Let setDocuments recieve the documents array directly
-            json = { data: json.data.documents }    // to fit old json-api structure
-            setDocuments(json);
+            const modifiedJson = { data: json.data.documents }    // to fit old json-api structure
+            setDocuments(modifiedJson);
         } catch (err) {
             console.error('Fetch error:', err);
         }
@@ -66,36 +67,37 @@ export const DocumentProvider = ({ children }) => {
 
 
     /**
-     * Create a new document with the current state title and content (i.e: the filled out forms)
+     * Create a new default 'Untitled' document
      * 
      * @async
      * @throws                    Error if the create-operation fails
      * @returns {Promise<void>}
      */
     const createDocument = async () => {
-        if (!title.trim() || !content.trim()) {
-            alert("Neither the Title nor Content fields can be empty.");
-            return;
-        }
-
-        const newDoc = { title, content };
-
         try {
-            const res = await fetch(`${H2O_EXPRESS_API_URI}/create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newDoc),
-            });
+            const documentInput = {
+                input: {
+                    title: "Untitled",
+                    content: "",
+                    code: false,
+                    comments: []
+                }
+            };
 
-            if (!res.ok) throw new Error('Failed to create document');
+            const res = await graphQLClient.query(mutations.createDocument, documentInput);
 
-            const savedDoc = await res.json();
+            if (!res.ok) throw new Error(`Failed to create document: ${res.status} ${res.statusText}`);
 
-            console.log("Created document", savedDoc);
+            const body = await res.json();
+            if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
+            
+            console.log("New document with id: ", body.data.createDocument);    // DEV
 
             switchToViewMode();
         } catch (err) {
-            console.error('Create error:', err);
+            console.error('Create error:', err);    // DEV
+            alert(err.message);                     // DEV
+            // alert("Failed to create document");     // PROD
         }
     };
 
