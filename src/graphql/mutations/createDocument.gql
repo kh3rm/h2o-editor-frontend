@@ -1,3 +1,13 @@
-mutation CreateDoc($input: DocumentInput!) {
-    createDocument(input: $input)
+mutation CreateDoc(
+    $title: String!
+    $content: String!
+    $comments: [String!]!
+    $code: Boolean!
+) {
+    createDocument(
+        title: $title
+        content: $content
+        comments: $comments
+        code: $code 
+    )
 }

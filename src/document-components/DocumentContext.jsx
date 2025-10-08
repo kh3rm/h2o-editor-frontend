@@ -52,16 +52,20 @@ export const DocumentProvider = ({ children }) => {
         try {
             const res = await graphQLClient.query(queries.GetDocuments);
 
-            if (!res.ok) throw new Error('Sorry, could not retrieve the documents.');
+            if (!res.ok) throw new Error(`Status: ${res.status}`);
     
-            const json = await res.json();
-            console.log(json);  // graphQL json structure
+            const body = await res.json();
+            console.log(body);  // graphQL json structure   // DEV
+            if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
 
             // TODO: Let setDocuments recieve the documents array directly
-            const modifiedJson = { data: json.data.documents }    // to fit old json-api structure
-            setDocuments(modifiedJson);
+            const modifiedBody = { data: body.data.documents }    // to fit old json-api structure
+            setDocuments(modifiedBody);
         } catch (err) {
-            console.error('Fetch error:', err);
+            console.error('Get all docs error', err);   // DEV
+            alert(err.message);                         // DEV
+
+            // alert('Sorry, could not retrieve the documents.');  // PROD
         }
     };
 
@@ -75,18 +79,16 @@ export const DocumentProvider = ({ children }) => {
      */
     const createDocument = async () => {
         try {
-            const documentInput = {
-                input: {
-                    title: "Untitled",
-                    content: "",
-                    code: false,
-                    comments: []
-                }
+            const variables = {
+                title: "Untitled",
+                content: "",
+                code: false,
+                comments: []
             };
 
-            const res = await graphQLClient.query(mutations.createDocument, documentInput);
+            const res = await graphQLClient.query(mutations.createDocument, variables);
 
-            if (!res.ok) throw new Error(`Failed to create document: ${res.status} ${res.statusText}`);
+            if (!res.ok) throw new Error(`Status: ${res.status}`);
 
             const body = await res.json();
             if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
@@ -95,7 +97,7 @@ export const DocumentProvider = ({ children }) => {
 
             switchToViewMode();
         } catch (err) {
-            console.error('Create error:', err);    // DEV
+            console.error('Create doc error:', err);    // DEV
             alert(err.message);                     // DEV
             // alert("Failed to create document");     // PROD
         }
@@ -135,7 +137,7 @@ export const DocumentProvider = ({ children }) => {
             switchToViewMode();
 
         } catch (err) {
-            console.error('Update error:', err);
+            console.error('Update doc error:', err);
         }
     };
 
