@@ -245,11 +245,11 @@ export const DocumentProvider = ({ children }) => {
 
 
   /**
-   * Throttled title-socket-emitters - these functions are used to limit how frequently
+   * Throttled socket-emitters - these functions are used to limit how frequently
    * socket.emit is called during fast typing.
    *
-   * Stored in a useRef-container and employs useEffect to only be established once,
-   * and to persist across renders, without resetting the throttle timer (which would kind
+   * Stored in a useRef-container, and employs useEffect to only be established once,
+   * to persist across renders, without resetting the throttle timer (which would kind
    * of defeat the point).
    */
 
