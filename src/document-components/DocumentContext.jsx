@@ -1,9 +1,14 @@
-/* istanbul ignore file */
+// DocumentContext.js
 
 /**
  * This DocumentContext-setup enables easy and consistent access to all the
- * relevant state-variables and functions for the Document Components,
- * cleaning up the code considerably, drastically reducing the need to feed them props.
+ * relevant state-variables, socket-connections, and synced edit-functions
+ * for the Document Components.
+ *
+ * This revised version replaces the traditional fetch-based CRUD-logic with a 
+ * real-time socket-based approach, enabling smooth collaboration and (hopefully) complete
+ * communication between the frontend and the backend, rendering much of the previously built
+ * enabling structure obsolete.
  *
  * The main parent <DocumentEditor> is enclosed:
  *
@@ -14,8 +19,7 @@
  * ...thus in Main, enabling its use, and the exported custom hook useDocumentContext()
  * provides easy access to the document-context-object in the Document Component-modules,
  * where one can simply destructure it and pick out what one needs...
- *
-*/
+ */
 
 import React from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
@@ -23,7 +27,7 @@ import { graphQLClient } from '../graphql/client';
 import { queries } from "../graphql/queries/provider";
 import { mutations } from "../graphql/mutations/provider";
 
-const DocumentContext = createContext();
+export const DocumentContext = createContext();
 
 export const DocumentProvider = ({ children }) => {
     const [title, setTitle] = useState('');
@@ -268,13 +272,13 @@ export const DocumentProvider = ({ children }) => {
 };
 
 /**
-* Created custom React-hook for accessing the DocumentContext.
-* 
-* Provides convenient access to the full document-related context state
-* and all the functions.
-* 
-* @returns {object}  Document context value
-*/
+ * Created custom React-hook for accessing the DocumentContext.
+ * 
+ * Provides convenient access to the full document-related context state
+ * and all the functions.
+ * 
+ * @returns {object}  Document context value
+ */
 export const useDocumentContext = () => {
   return useContext(DocumentContext);
 };

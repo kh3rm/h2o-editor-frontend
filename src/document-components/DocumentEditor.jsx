@@ -15,7 +15,8 @@ function DocumentEditor() {
     } = useDocumentContext();
 
     return (
-        <div>
+        <>
+        <div className="main-content">
             {/* Conditional rendering of the correct top button based on mode:*/}
 
             <div className="top-button-container">
@@ -36,7 +37,9 @@ function DocumentEditor() {
                 <DocumentForm />
             )}
         </div>
+        </>
     );
+    
 }
 
 export default DocumentEditor;
