@@ -21,9 +21,10 @@ function DocumentEditor() {
 
             <div className="top-button-container">
                 {mode === 'view' && (
-                    <button onClick={createDocument} className="top-button create-button">+ New Document</button>
+                    <button onClick={createDocument} className="top-button back-button" type="button">Create New Document</button>
+
                 )}
-                {(mode === 'create' || mode === 'update') && (
+                {( mode === 'update') && (
                     <button onClick={switchToViewMode} className="top-button back-button" type="button">← Back</button>
                 )}
                 <br />
@@ -33,8 +34,8 @@ function DocumentEditor() {
 
             {mode === 'view' ? (
                 <SavedDocuments />
-            ) : (mode === 'create' || mode === 'update') && (
-                <DocumentForm />
+            ) : ( mode === 'update') && (
+                <DocumentForm key="document-quill-editor-form" />
             )}
         </div>
         </>
