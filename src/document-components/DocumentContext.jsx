@@ -256,7 +256,7 @@ export const DocumentProvider = ({ children }) => {
   useEffect(() => {
     emitTitleUpdate.current = throttle((newTitle) => {
       if (currentDocIdRef.current) {
-        socketRef.current.emit("edit-document", {
+        socketRef.current.emit("update-document", {
           id: currentDocIdRef.current,
           title: newTitle
         });
@@ -266,7 +266,7 @@ export const DocumentProvider = ({ children }) => {
     emitContentUpdate.current = throttle((newContent) => {
       console.log("Sending content update", currentDocIdRef.current, newContent);
       if (currentDocIdRef.current) {
-        socketRef.current.emit("edit-document", {
+        socketRef.current.emit("update-document", {
           id: currentDocIdRef.current,
           content: newContent
         });
