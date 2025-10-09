@@ -3,5 +3,7 @@ query GetDoc($id: ID!) {
         _id
         title
         content
+        code
+        comments
     }
 }

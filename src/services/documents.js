@@ -5,7 +5,7 @@ import { validateGraphQLResponse } from "./utils";
 
 
 /**
- * Create, Read and Delete for documents
+ * CRUD for documents
  */
 const documents = {
 
@@ -21,6 +21,26 @@ const documents = {
             const res = await graphQLClient.query(queries.GetDocuments);
             const body = await validateGraphQLResponse(res);
             return body.data.documents;
+        } catch (err) {
+            console.error('Get all docs:', err);   // DEV
+            alert('Sorry, could not retrieve documents');
+        }
+    },
+
+
+    /**
+     * Get one document by id
+     * 
+     * @async
+     * @param {string} id           id of document to fetch
+     * @throws                      Error on fetch- or graphQL errors
+     * @returns {Promise<Object>}   Document
+     */
+    getOne: async (id) => {
+        try {
+            const res = await graphQLClient.query(queries.GetDocument, { id: id });
+            const body = await validateGraphQLResponse(res);
+            return body.data.document;
         } catch (err) {
             console.error('Get all docs:', err);   // DEV
             alert('Sorry, could not retrieve documents');
@@ -51,6 +71,28 @@ const documents = {
         } catch (err) {
             console.error('Create doc:', err);    // DEV
             alert("Sorry, could not create document");
+        }
+    },
+
+
+    /**
+     * Update document
+     * 
+     * @async
+     * @param {Object} fields       Document fields { id, title, content, code, comments }
+     * @throws                      Error if the create-operation fails
+    * @returns {Promise<Boolean>}   true if successful
+     */
+    update: async (fields) => {
+        const variables = { ...fields } ;
+
+        try {
+            const res = await graphQLClient.query(mutations.updateDocument, variables);
+            const body = await validateGraphQLResponse(res);
+            return body.data.updateDocument;
+        } catch (err) {
+            console.error('Update doc:', err);    // DEV
+            alert("Sorry, could not update document");
         }
     },
     
