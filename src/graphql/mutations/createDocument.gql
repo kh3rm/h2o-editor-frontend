@@ -1,6 +1,6 @@
 mutation CreateDoc(
     $title: String!
-    $content: String!
+    $content: JSON!
     $comments: [String!]!
     $code: Boolean!
 ) {
