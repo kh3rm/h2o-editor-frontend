@@ -6,7 +6,7 @@
  * for the Document Components.
  *
  * This re-revised version replaces the original traditional fetch-based REST-API CRUD-logic
- * (that fleetingly made an appearance as an experiental fully socket-based implementation),
+ * (that fleetingly made an appearance as an experimental fully socket-based implementation),
  * to a now more sound hybrid-approach, where the newly established GraphQL-structure provides a 
  * single endpoint that enables the Type-checked and smooth Creation (C), Reading/loading (R), and
  * Deletion (D) of documents in the DB.
