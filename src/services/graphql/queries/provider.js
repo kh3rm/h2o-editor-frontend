@@ -3,7 +3,8 @@
  */
 
 // Imports `.gql`-files as strings with `vite-plugin-string` (see vite.config)
-import GetDocument from './GetDocument.gql';
-import GetDocuments from './GetDocuments.gql';
+import getUser from './getUser.gql';
+import getDocument from './getDocument.gql';
+import getDocuments from './getDocuments.gql';
 
-export const queries = { GetDocument, GetDocuments };
+export const queries = { getUser, getDocument, getDocuments };

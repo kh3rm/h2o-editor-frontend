@@ -18,7 +18,7 @@ const documents = {
      */
     getAll: async () => {
         try {
-            const res = await graphQLClient.query(queries.GetDocuments);
+            const res = await graphQLClient.query(queries.getDocuments);
             const body = await validateGraphQLResponse(res);
             return body.data.documents;
         } catch (err) {
@@ -38,7 +38,7 @@ const documents = {
      */
     getOne: async (id) => {
         try {
-            const res = await graphQLClient.query(queries.GetDocument, { id: id });
+            const res = await graphQLClient.query(queries.getDocument, { id: id });
             const body = await validateGraphQLResponse(res);
             return body.data.document;
         } catch (err) {
