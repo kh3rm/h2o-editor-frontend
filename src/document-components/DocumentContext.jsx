@@ -24,6 +24,7 @@ import usersService from "../services/users";
 const DocumentContext = createContext();
 
 export const DocumentProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [documents, setDocuments] = useState([]);
@@ -34,7 +35,18 @@ export const DocumentProvider = ({ children }) => {
     // Fetches the documents once on initiation
     useEffect(() => {
         getAllDocuments();
+        getUser()   // DEV
     }, []);
+
+
+    /**
+     * Get authenticated user and polulate user state
+     */
+    const getUser = async () => {
+        const authenticatedUser = await usersService.getOneByAuth();
+        console.log("USER:", authenticatedUser);
+        setUser(authenticatedUser);
+    }
 
 
     /**
@@ -46,7 +58,7 @@ export const DocumentProvider = ({ children }) => {
      */
     const getAllDocuments = async () => {
         const docs = await documentsService.getAll();
-        setDocuments({ data: docs });   // TODO just pass docs
+        setDocuments(docs);
     };
     
     
@@ -64,6 +76,8 @@ export const DocumentProvider = ({ children }) => {
     
     
     /**
+     * THIS IS ONLY A TEMPORARY IMPLEMENTATION TO BE REPLACED BY SOCKET-SOLUTION
+     * 
      * Update an existing document based on the state updateId, title and content
      * (i.e: the filled out forms and the chosen document's id (updateId))
      * 
@@ -96,25 +110,23 @@ export const DocumentProvider = ({ children }) => {
      * Delete a document by id via graphQL endpoint, after user confirmation,
      * and populate documents state
      * 
-     * @param {string}  deleteId    id of document to delete
+     * @param {string}  id          id of document to delete
      * @async
      * @throws                      Fetch- or graphQL errors
      * @returns {Promise<void>}
      */
-    const deleteDocument = async (deleteId) => {
-        // TODO: user confirmation
-        await documentsService.delete(deleteId);    // TODO: try to combine delete and getAll in one query?
-        getAllDocuments();
+    const deleteDocument = async (id, title) => {
+        if (confirm(`Are you sure you want to delete '${title}'?`)) {
+            await documentsService.delete(id);    // TODO: try to combine delete and getAll in one query?
+            getAllDocuments();
+        }
     };
     
     
     /**
-     * Load a document based on its id and populate the state title and content.
+     * THIS IS ONLY A TEMPORARY IMPLEMENTATION TO BE REPLACED BY SOCKET-SOLUTION
      * 
-     * It makes sure to retrieve the latest version from the backend rather than relying on 
-     * the local documents state.
-     * 
-     * Handling could be improved with eventual web-socket-implementation in the project.
+     * Get a document via graphQL endpoint and populate the states updateId, title and content.
      * 
      * @async
      * @param {string} id           Id of document to fetch
