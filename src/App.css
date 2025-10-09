@@ -1,5 +1,7 @@
 * {
   box-sizing: border-box;
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 400 !important;
 }
 
 body {
@@ -10,12 +12,12 @@ body {
 }
 
 main {
-  min-height: 80vh;
+  min-height: 90vh;
   width: 100vw;
 }
 
 .main-content {
-  max-width: 50%;
+  max-width: 58%;
   margin: 3rem auto;
   font-size: 1.3em;
 }
@@ -64,14 +66,20 @@ textarea {
   gap: 10px;
 }
 
+
 button {
   font-size: 17px;
-  padding: 0.7em 2em;
+  padding: 0.9em 2.2em;
   border: transparent;
   box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
   background: rgb(50, 74, 94);
   color: white;
   border-radius: 4px;
+}
+
+.document-button {
+  min-width: 13rem;
+  min-height: 4.4rem;
 }
 
 button:hover {
@@ -83,22 +91,24 @@ button:focus {
 
 .saved-documents {
   width: 100%;
-  max-width: 900px;
+  max-width: 1000px;
   padding: 0.4rem 1.8rem;
-  border: 2px dashed rgb(50, 74, 94);
+  border: 2px dotted rgb(201, 201, 208);
+  /* border: 2px dashed rgb(50, 74, 94); */
   margin: 2rem 0;
   border-radius: 4px;
 }
 
 .saved-documents-h2 {
+  
   margin: 0.4rem 0.4rem;
   padding: 0.8rem 0.4;
-  border-bottom: 2px solid rgb(50, 74, 94);
+  border-bottom: 2px dotted rgb(201, 201, 208);
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 400 !important;
 }
 
 header {
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  font-size: 12px;
   display: flex;
   width: 100vw;
   height: 85px;
@@ -111,10 +121,13 @@ header {
 .header-logo {
   display: flex;
   align-items: center;
+  font-size: 15px;
 }
 
 .header-title {
   margin-left: 2rem;
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 400 !important;
 }
 
 footer {
@@ -140,13 +153,49 @@ footer {
 
 .delete-button {
   position: absolute;
-  right: 4px;
-  top: 3px;
+  right: 2px;
+  top: -3px;
   cursor: pointer;
   background: transparent;
   border: none;
   color: rgb(246, 255, 255);
   transition: transform 0.2s ease;
+}
+
+/* .id-button {
+  font-size: 8px;
+  position: absolute;
+  left: 4px;
+  bottom: 3px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  line-height: 1;
+  letter-spacing: -5px;
+} */
+
+.id-button {
+  font-size: 8px;
+  position: absolute;
+  left: 3px;
+  top:3px;
+}
+.id-square {
+  display: inline-block;
+  background-color: rgb(218, 100, 100);
+  color: white; 
+  padding: 0 0.3rem;   
+  width: auto;
+  height: auto;
+  text-align: center;         
+  vertical-align: middle;   
+  border-radius: 3px;   
+}
+
+.doc-symbol {
+  display: none;
+  position: relative;
+  left: -5px;
+  top:15px;
 }
 
 .delete-button:hover {
@@ -162,12 +211,11 @@ input[type="text"],
 textarea {
   font-family: inherit;
   font-size: 16px;
-  line-height: 1.5;
-  box-sizing: border-box;
 }
 
 input[type="text"]:focus,
-textarea:focus {
-  border: 2px solid rgb(50, 74, 94);
+textarea:focus,
+.ql-editor.ql-snow:focus {
+  border: auto;
   outline: none;
 }
