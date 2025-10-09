@@ -19,9 +19,11 @@
 
 import React from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
-import { graphQLClient } from '../graphql/client';
-import { queries } from "../graphql/queries/provider";
-import { mutations } from "../graphql/mutations/provider";
+import { graphQLClient } from '../services/graphql/client';
+import { queries } from "../services/graphql/queries/provider";
+import { mutations } from "../services/graphql/mutations/provider";
+import documentsService from "../services/documents";
+import usersService from "../services/users";
 
 const DocumentContext = createContext();
 
@@ -32,76 +34,43 @@ export const DocumentProvider = ({ children }) => {
     const [updateId, setUpdateId] = useState(null);
     const [mode, setMode] = useState('view');
 
-    // const H2O_EXPRESS_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/documents';
-    const H2O_EXPRESS_API_URI = 'http://localhost:3000/documents';
-    const H2O_GRAPHQL_API_URI = 'http://localhost:3000/graphql';
+    // const H2O_EXPRESS_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/documents'; // PROD
+    // const H2O_GRAPHQL_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/graphql'; // PROD
+    const H2O_EXPRESS_API_URI = 'http://localhost:3000/documents';  // DEV
+    const H2O_GRAPHQL_API_URI = 'http://localhost:3000/graphql';    // DEV
 
     // Fetches the documents once on initiation
     useEffect(() => {
         getAllDocuments();
     }, []);
 
+
     /**
-     * Fetches all the documents from the backend and populates the documents state.
+     * Fetch documents via graphQL endpoint, and populate documents state
      * 
      * @async
-     * @throws                    Error if the fetch-operation fails
+     * @throws                  Fetch- or graphQL errors
      * @returns {Promise<void>}
      */
     const getAllDocuments = async () => {
-        try {
-            const res = await graphQLClient.query(queries.GetDocuments);
-
-            if (!res.ok) throw new Error(`Status: ${res.status}`);
-    
-            const body = await res.json();
-            console.log(body);  // graphQL json structure   // DEV
-            if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
-
-            // TODO: Let setDocuments recieve the documents array directly
-            const modifiedBody = { data: body.data.documents }    // to fit old json-api structure
-            setDocuments(modifiedBody);
-        } catch (err) {
-            console.error('Get all docs error', err);   // DEV
-            alert(err.message);                         // DEV
-
-            // alert('Sorry, could not retrieve the documents.');  // PROD
-        }
+        const docs = await documentsService.getAll();
+        setDocuments({ data: docs });   // TODO just pass docs
     };
 
-
+    
     /**
-     * Create a new default 'Untitled' document
+     * Create a new default 'Untitled' document via graphQl endpoint, and populate documents state
      * 
      * @async
-     * @throws                    Error if the create-operation fails
+     * @throws                    Fetch- or graphQL errors
      * @returns {Promise<void>}
      */
     const createDocument = async () => {
-        try {
-            const variables = {
-                title: "Untitled",
-                content: "",
-                code: false,
-                comments: []
-            };
-
-            const res = await graphQLClient.query(mutations.createDocument, variables);
-
-            if (!res.ok) throw new Error(`Status: ${res.status}`);
-
-            const body = await res.json();
-            if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
-            
-            console.log("New document with id: ", body.data.createDocument);    // DEV
-
-            switchToViewMode();
-        } catch (err) {
-            console.error('Create doc error:', err);    // DEV
-            alert(err.message);                     // DEV
-            // alert("Failed to create document");     // PROD
-        }
+        await documentsService.create();    // TODO: try to combine create and getAll in one query?
+        getAllDocuments();
     };
+
+
 
     /**
      * Update an existing document based on the state updateId, title and content
@@ -114,8 +83,8 @@ export const DocumentProvider = ({ children }) => {
     const updateDocument = async () => {
         if (!updateId) return;
 
-        if (!title.trim() || !content.trim()) {
-            alert("Neither the Title nor Content fields can be empty.");
+        if (!title.trim()) {
+            alert("Title field can not be empty.");
             return;
         }
 
@@ -141,43 +110,23 @@ export const DocumentProvider = ({ children }) => {
         }
     };
 
+
     /**
-     * Delete a document based on its id after user confirmation.
+     * Delete a document by id via graphQL endpoint, after user confirmation,
+     * and populate documents state
      * 
-     * Uses the documents state to showcase the document title for confirmation purposes 
-     * before sending the delete request to the backend.
-     * 
-     * Might be handled more ideally in the future (implementing a web-socket-solution).
-     * 
+     * @param {string}  deleteId    id of document to delete
      * @async
-     * @param {string} deleteId    The document-id
-     * @throws                     Error if the delete-operation fails
+     * @throws                      Fetch- or graphQL errors
      * @returns {Promise<void>}
      */
     const deleteDocument = async (deleteId) => {
-        const documentToDelete = documents.data.find(doc => doc._id === deleteId);
-
-        const isConfirmed = window.confirm(
-            `Are you sure that you want to delete the document titled "${documentToDelete.title}"?`
-        );
-
-        if (isConfirmed) {
-            try {
-                const res = await fetch(`${H2O_EXPRESS_API_URI}/delete`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: deleteId }),
-                });
-
-                if (!res.ok) throw new Error('Failed to delete the requested document');
-
-                console.log('Deleted document-id:', deleteId);
-                switchToViewMode();
-            } catch (err) {
-                console.error('Delete error:', err);
-            }
-        }
+        // TODO: user confirmation
+        await documentsService.delete(deleteId);    // TODO: try to combine delete and getAll in one query?
+        getAllDocuments();
     };
+
+
 
     /**
      * Load a document based on its id and populate the state title and content.
