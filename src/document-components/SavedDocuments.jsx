@@ -1,6 +1,9 @@
 import React from 'react';  
 import { useDocumentContext } from './DocumentContext';
 
+import docSymbol from "../img/doc9.svg";
+
+
 /**
  * @component SavedDocuments
  * Handles the loading of the saved documents, for updating/viewing or deleting.
@@ -8,7 +11,7 @@ import { useDocumentContext } from './DocumentContext';
 function SavedDocuments() {
     const {
         documents,
-        selectDocument,
+        joinEditDocument,
         deleteDocument
     } = useDocumentContext();
 
@@ -19,9 +22,11 @@ function SavedDocuments() {
 
                 {Array.isArray(documents) && documents.map(doc => (
                     <div key={doc._id} className="document-button-container">
-                        <button className="document-button" onClick={() => selectDocument(doc)}>
+                        <button className="document-button" onClick={() => joinEditDocument(doc._id)}>
+                            <span className="doc-symbol"><img src={docSymbol} alt="Doc-symbol" style={{ width: 40, height: 40 }} /></span>
                             {doc.title}
                             <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(doc); }}>☒</span>
+                            <span className="id-button id-square"> _id: ...{doc._id.slice(-5)}</span>
                         </button>
                     </div>
                 ))}
