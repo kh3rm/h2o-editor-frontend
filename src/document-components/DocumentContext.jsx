@@ -21,235 +21,254 @@
  * where one can simply destructure it and pick out what one needs...
  */
 
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
-import { throttle } from "lodash";
+import React from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { graphQLClient } from '../graphql/client';
+import { queries } from "../graphql/queries/provider";
+import { mutations } from "../graphql/mutations/provider";
 
 export const DocumentContext = createContext();
 
 export const DocumentProvider = ({ children }) => {
-  const socketRef = useRef(null);
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [documents, setDocuments] = useState([]);
+    const [updateId, setUpdateId] = useState(null);
+    const [mode, setMode] = useState('view');
 
-  const [documents, setDocuments] = useState([]);
-  const [currentDocId, setCurrentDocId] = useState(null);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+    // const H2O_EXPRESS_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/documents';
+    const H2O_EXPRESS_API_URI = 'http://localhost:3000/documents';
+    const H2O_GRAPHQL_API_URI = 'http://localhost:3000/graphql';
 
-  const [updateId, setUpdateId] = useState(null);
-  const [mode, setMode] = useState('view');
+    // Fetches the documents once on initiation
+    useEffect(() => {
+        getAllDocuments();
+    }, []);
 
-  const currentDocIdRef = useRef(null); // A persistent reference to the current document-ID
+    /**
+     * Fetches all the documents from the backend and populates the documents state.
+     * 
+     * @async
+     * @throws                    Error if the fetch-operation fails
+     * @returns {Promise<void>}
+     */
+    const getAllDocuments = async () => {
+        try {
+            const res = await graphQLClient.query(queries.GetDocuments);
 
-  const emitTitleUpdate = useRef(null);  // Throttled title-emitter (to be fine-tuned and revised)
-  const emitContentUpdate = useRef(null);  // Throttled content-emitter (to be fine-tuned and revised)
+            if (!res.ok) throw new Error(`Status: ${res.status}`);
+    
+            const body = await res.json();
+            console.log(body);  // graphQL json structure   // DEV
+            if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
 
-/*   const [titleEmitCount, setTitleEmitCount] = useState(0);  // Used in dev to fine tune throttle
-  const [contentEmitCount, setContentEmitCount] = useState(0);  // Used in dev to fine tune throttle */
+            // TODO: Let setDocuments recieve the documents array directly
+            const modifiedBody = { data: body.data.documents }    // to fit old json-api structure
+            setDocuments(modifiedBody);
+        } catch (err) {
+            console.error('Get all docs error', err);   // DEV
+            alert(err.message);                         // DEV
 
-  // Keep currentDocIdRef in sync with currentDocId (ensures that the socket emits with latest value)
-  useEffect(() => {
-    currentDocIdRef.current = currentDocId;
-  }, [currentDocId]);
-
-  // Initialize the socket and set up the listeners
-  useEffect(() => {
-    const socket = io("http://localhost:4000");
-    socketRef.current = socket;
-
-    // Logs if connection is successful, and triggers the retrieval of all the documents
-    socket.on("connect", () => {
-      console.log("Connected to socket:", socket.id);
-      socket.emit("get-all-documents");
-    });
-
-    // Updates local documents-state with data received from the backend-emit
-    socket.on("all-documents", (docs) => {
-      setDocuments(docs);
-      console.log(docs);
-
-      // Reset local state if the currently selected document has been deleted by another user
-    if (!docs.some((d) => d._id === currentDocIdRef.current)) {
-    setCurrentDocId(null);
-    setTitle("");
-    setContent("");
-    }
-    });
-
-    // After successful creation of a new document: join its socket-room, set the state
-    socket.on("document-created", (doc) => {
-      setCurrentDocId(doc._id);
-      setTitle(doc.title || "");
-      setContent(doc.content || "");
-      socket.emit("join-document-room", doc._id);
-    });
-
-    // When a document is updated on the backend (e.g. by another user), update the local documents list, 
-    // and if the updated document is currently open in the editor, also update the local title- and 
-    // content-states to reflect the latest changes
-    socket.on("document-updated", (doc) => {
-
-      setDocuments((prev) =>
-        prev.map((d) => (d._id === doc._id ? doc : d))
-      );
-      
-      if (doc._id === currentDocIdRef.current) {
-        setTitle(doc.title || "");
-        setContent(doc.content || "");
-      }
-    });
-
-    // Disconnect the socket properly to stop all socket-communication when closing
-    return () => {
-      socket.disconnect();
+            // alert('Sorry, could not retrieve the documents.');  // PROD
+        }
     };
-  }, []);
 
 
-  /**
-   * Throttled title-socket-emitters These functions uses lodash.throttle()
-   * to limit how frequently socket.emit is called during fast typing.
-   *
-   * Stored in a useRef-container and employs useEffect to persist across renders without resetting
-   * the throttle timer (which would kind of defeat the point).
-   */
-  useEffect(() => {
-    emitTitleUpdate.current = throttle((newTitle) => {
-      if (currentDocIdRef.current) {
-        socketRef.current.emit("edit-document", {
-          id: currentDocIdRef.current,
-          title: newTitle,
-        });
+    /**
+     * Create a new default 'Untitled' document
+     * 
+     * @async
+     * @throws                    Error if the create-operation fails
+     * @returns {Promise<void>}
+     */
+    const createDocument = async () => {
+        try {
+            const variables = {
+                title: "Untitled",
+                content: "",
+                code: false,
+                comments: []
+            };
 
-        //setTitleEmitCount((prev) => prev + 1);
-      }
-    }, 175);
+            const res = await graphQLClient.query(mutations.createDocument, variables);
 
-    emitContentUpdate.current = throttle((newContent) => {
-      if (currentDocIdRef.current) {
-        socketRef.current.emit("edit-document", {
-          id: currentDocIdRef.current,
-          content: newContent,
-        });
+            if (!res.ok) throw new Error(`Status: ${res.status}`);
 
-        //setContentEmitCount((prev) => prev + 1);
-      }
-    }, 175);
-  }, []);
+            const body = await res.json();
+            if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
+            
+            console.log("New document with id: ", body.data.createDocument);    // DEV
 
-  /**
-   * Selects a document and updates the title and content state accordingly.
-   *
-   * Emits a socket request to backend to join the appropriate document-room for real-time collaboration.
-   *
-   * @param {object} doc   The document-object from the saved documents available to user
-   */
-  const selectDocument = (doc) => {
-    setCurrentDocId(doc._id);
-    setTitle(doc.title || "");
-    setContent(doc.content || "");
-    setUpdateId(doc._id);
-    setMode('update');
-    socketRef.current.emit("join-document-room", doc._id);
-  };
+            switchToViewMode();
+        } catch (err) {
+            console.error('Create doc error:', err);    // DEV
+            alert(err.message);                     // DEV
+            // alert("Failed to create document");     // PROD
+        }
+    };
 
-  /**
-   * Emits a socket request to create a new document.
-   * 
-   * The create-document-event will be caught and handled appropriately in the backend.
-   */
-  const createDocument = () => {
-    socketRef.current.emit("create-document");
-  };
+    /**
+     * Update an existing document based on the state updateId, title and content
+     * (i.e: the filled out forms and the chosen document's id (updateId))
+     * 
+     * @async
+     * @throws                    Error if update-operation fails
+     * @returns {Promise<void>}
+     */
+    const updateDocument = async () => {
+        if (!updateId) return;
 
-  /**
-   * Emits a socket request to backend to delete a specific document after user confirmation.
-   * 
-   * @param {string} docId   ID of the document to be deleted
-   */
-  const deleteDocument = (doc) => {
-    if (window.confirm(`Are you sure that you want to delete the document with the title "${doc.title}"?`)) {
-      socketRef.current.emit("delete-document", doc._id);
-    }
-  };
+        if (!title.trim() || !content.trim()) {
+            alert("Neither the Title nor Content fields can be empty.");
+            return;
+        }
 
-  /**
-   * Called on title input-change.
-   * 
-   * Updates the local title-state and triggers a throttled socket emit.
-   * 
-   * @param {string} newTitle   Updated title value
-   */
-  const socketTitleChange = (newTitle) => {
-    setTitle(newTitle);
-    emitTitleUpdate.current(newTitle);
-  };
+        const updatedDocument = {
+            id: updateId,
+            title,
+            content,
+        };
 
-  /**
-   * Called on content input-change. 
-   * 
-   * Updates local content-state and triggers a throttled socket emit.
-   * 
-   * @param {string} newContent   Updated content value
-   */
-  const socketContentChange = (newContent) => {
-    setContent(newContent);
-    emitContentUpdate.current(newContent);
-  };
+        try {
+            const res = await fetch(`${H2O_EXPRESS_API_URI}/update`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedDocument),
+            });
 
-  /**
-   * Resets state and sets mode to the default 'view'.
-   */
-  const switchToViewMode = () => {
-    resetState();
-    setMode('view');
-  };
+            if (!res.ok) throw new Error(`Failed to update the document with the id ${updateId}`);
 
-  /**
-   * Resets the document-related state.
-   * 
-   * Clears title and content state, nullifies the updateId.
-   */
-  const resetState = () => {
-    setTitle('');
-    setContent('');
-    setUpdateId(null);
-  };
+            switchToViewMode();
 
-  return (
-    <DocumentContext.Provider
-      value={{
-        documents,
-        setDocuments,
-        currentDocId,
-        setCurrentDocId,
-        title,
-        setTitle,
-        content,
-        setContent,
-        mode,
-        setMode,
-        updateId,
-        setUpdateId,     
-        socketRef,
-        currentDocIdRef,
-        emitTitleUpdate,
-        emitContentUpdate,
-        selectDocument,
-        createDocument,
-        deleteDocument,
-        socketTitleChange,
-        socketContentChange,
-        switchToViewMode,
-        resetState,
-/*      titleEmitCount,
-        setTitleEmitCount,
-        contentEmitCount,
-        setContentEmitCount, */
-      }}
-    >
-      {children}
-    </DocumentContext.Provider>
-  );
+        } catch (err) {
+            console.error('Update doc error:', err);
+        }
+    };
+
+    /**
+     * Delete a document based on its id after user confirmation.
+     * 
+     * Uses the documents state to showcase the document title for confirmation purposes 
+     * before sending the delete request to the backend.
+     * 
+     * Might be handled more ideally in the future (implementing a web-socket-solution).
+     * 
+     * @async
+     * @param {string} deleteId    The document-id
+     * @throws                     Error if the delete-operation fails
+     * @returns {Promise<void>}
+     */
+    const deleteDocument = async (deleteId) => {
+        const documentToDelete = documents.data.find(doc => doc._id === deleteId);
+
+        const isConfirmed = window.confirm(
+            `Are you sure that you want to delete the document titled "${documentToDelete.title}"?`
+        );
+
+        if (isConfirmed) {
+            try {
+                const res = await fetch(`${H2O_EXPRESS_API_URI}/delete`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: deleteId }),
+                });
+
+                if (!res.ok) throw new Error('Failed to delete the requested document');
+
+                console.log('Deleted document-id:', deleteId);
+                switchToViewMode();
+            } catch (err) {
+                console.error('Delete error:', err);
+            }
+        }
+    };
+
+    /**
+     * Load a document based on its id and populate the state title and content.
+     * 
+     * It makes sure to retrieve the latest version from the backend rather than relying on 
+     * the local documents state.
+     * 
+     * Handling could be improved with eventual web-socket-implementation in the project.
+     * 
+     * @async
+     * @param {string} id         Document ID
+     * @throws                     Error if the retrieval fails
+     * @returns {Promise<void>}
+     */
+    const loadDocument = async (id) => {
+        try {
+            const res = await graphQLClient.query(queries.GetDocument, { id: id });
+
+            if (!res.ok) throw new Error(`Failed to fetch the document with the id: ${id}`);
+
+            const json = await res.json();
+            console.log(json);  // graphQL json structure
+            const selectedDocument = json.data.document;
+
+            setTitle(selectedDocument.title);
+            setContent(selectedDocument.content);
+            setUpdateId(selectedDocument._id);
+            setMode('update');
+        } catch (err) {
+            console.error('Load Document Error:', err);
+        }
+    };
+
+    /**
+     * Resets the document-related state.
+     * 
+     * Clears title and content state, nullifies the updateId, and fetches and updates the
+     * documents-state from backend, to keep the documents fresh and up to date.
+     */
+    const resetState = () => {
+        setTitle('');
+        setContent('');
+        setUpdateId(null);
+        getAllDocuments();
+    };
+
+    /**
+     * Resets state and sets mode to 'create'.
+     */
+    const switchToCreateMode = () => {
+        resetState();
+        setMode('create');
+    };
+
+    /**
+     * Resets state and sets mode to the default 'view'.
+     */
+    const switchToViewMode = () => {
+        resetState();
+        setMode('view');
+    };
+
+    // Log all the mode-changes (dev)
+    useEffect(() => {
+        console.log(mode);
+    }, [mode]);
+
+    return (
+        <DocumentContext.Provider
+            value={{
+                title,
+                setTitle,
+                content,
+                setContent,
+                createDocument,
+                updateDocument,
+                updateId,
+                deleteDocument,
+                loadDocument,
+                documents,
+                mode,
+                switchToCreateMode,
+                switchToViewMode,
+            }}>
+            {children}
+        </DocumentContext.Provider>
+    );
 };
 
 /**

@@ -1,0 +1,7 @@
+query GetDoc($id: ID!) {
+    document(id: $id) {
+        _id
+        title
+        content
+    }
+}

@@ -21,8 +21,7 @@ function DocumentEditor() {
 
             <div className="top-button-container">
                 {mode === 'view' && (
-                    <button onClick={createDocument} className="top-button back-button" type="button">Create New Document</button>
-
+                    <button onClick={createDocument} className="top-button create-button">+ New Document</button>
                 )}
                 {(mode === 'create' || mode === 'update') && (
                     <button onClick={switchToViewMode} className="top-button back-button" type="button">← Back</button>
