@@ -3,6 +3,12 @@ query GetUser {
         _id
         name
         email
-        documents
+        documents {
+            _id
+            title
+            content
+            code
+            comments
+        }
     }
 }

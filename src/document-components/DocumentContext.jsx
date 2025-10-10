@@ -40,7 +40,7 @@ export const DocumentProvider = ({ children }) => {
 
 
     /**
-     * Get authenticated user and polulate user state
+     * Get authenticated user, and polulate user and documents state
      */
     const getUser = async () => {
         const authenticatedUser = await usersService.getOneByAuth();
