@@ -35,7 +35,6 @@ export const DocumentProvider = ({ children }) => {
     // Fetches the documents once on initiation
     useEffect(() => {
         getAllDocuments();
-        getUser()   // DEV
     }, []);
 
 
@@ -46,6 +45,7 @@ export const DocumentProvider = ({ children }) => {
         const authenticatedUser = await usersService.getOneByAuth();
         console.log("USER:", authenticatedUser);
         setUser(authenticatedUser);
+        setDocuments(authenticatedUser.documents);
     }
 
 
