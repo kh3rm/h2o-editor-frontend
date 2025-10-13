@@ -8,7 +8,7 @@ import { useDocumentContext } from './DocumentContext';
 function SavedDocuments() {
     const {
         documents,
-        loadDocument,
+        joinEditDocument,
         deleteDocument
     } = useDocumentContext();
 
@@ -19,9 +19,10 @@ function SavedDocuments() {
 
                 {Array.isArray(documents) && documents.map(doc => (
                     <div key={doc._id} className="document-button-container">
-                        <button className="document-button" onClick={() => loadDocument(doc._id)}>
+                        <button className="document-button" onClick={() => joinEditDocument(doc._id)}>
                             {doc.title}
-                            <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(doc._id, doc.title); }}>☒</span>
+                            <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(doc); }}>☒</span>
+                            <span className="id-button id-square"> _id: ...{doc._id.slice(-5)}</span>
                         </button>
                     </div>
                 ))}
