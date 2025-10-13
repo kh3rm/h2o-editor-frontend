@@ -3,5 +3,6 @@ query GetDocuments {
         _id
         title
         content
+        code
     }
 }

@@ -4,6 +4,7 @@ import SavedDocuments from './SavedDocuments';
 import DocumentForm from './DocumentForm';
 import Chat from '../view-components/Chat';
 import Comments from '../view-components/Comments';
+import CodeEditor from './CodeEditor';
 
 /**
  * @component DocumentEditor
@@ -14,6 +15,7 @@ function DocumentEditor() {
         mode,
         switchToViewMode,
         createDocument,
+        createCodeModule,
         chatDisplayed,
         setChatDisplayed,
         commentsDisplayed,
@@ -41,26 +43,36 @@ function DocumentEditor() {
                         <button onClick={createDocument} className="top-button back-button" type="button">
                             Create New Document
                         </button>
+
+                        <button onClick={createCodeModule} className="top-button back-button code-button" type="button">
+                            Create New Code Module
+                        </button>
                         </>
                     )}
-                    {mode === 'update' && (
+                    
+                    {(mode === 'update' || mode === 'code-edit') && (
                         <button onClick={switchToViewMode} className="top-button back-button" type="button">
                             ← Back
                         </button>
                     )}
+                    
                     <br />
                 </div>
 
                 {/* Conditional rendering of the correct Document Component based on mode: */}
 
-                {mode === 'view' ? (
-                    <SavedDocuments />
-                ) : (
-                mode === 'update' && (
+                {mode === 'view' && <SavedDocuments />}
+
+                {mode === 'update' && (
                     <>
                     <DocumentForm key="document-quill-editor-form" />
                     </>
-                )
+                )}
+
+                {mode === 'code-edit' && (
+                    <>
+                    <CodeEditor key="document-code-editor" />
+                    </>
                 )}
             </div>
 

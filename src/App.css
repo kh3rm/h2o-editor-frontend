@@ -63,12 +63,13 @@ textarea {
   gap: 3rem;
 }
 
-.code-doc-button {
+.code-button {
+  font-family: 'Consolas', 'Monaco', 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace;
+  font-size: 15px;
   background-color:#574560;
 }
 
-
-.code-doc-button:hover {
+.code-button:hover {
   background: linear-gradient(90deg, rgb(97, 78, 109) 0%, #574560 100%);
 }
 

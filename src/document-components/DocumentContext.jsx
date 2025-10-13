@@ -147,6 +147,41 @@ export const DocumentProvider = ({ children }) => {
 
 
   /**
+   * Create a new default 'Untitled' document, with a Quill-based empty delta-object for
+   * the empty initialized content.
+   * 
+   * @async
+   * @throws                    Error if the create-operation fails
+   * @returns {Promise<void>}
+   */
+  const createCodeModule = async () => {
+    try {
+      const variables = {
+        title: "Untitled",
+        content: { ops: [{ insert: "\n" }] },
+        code: true,
+        comments: []
+      };
+
+        const res = await graphQLClient.query(mutations.createDocument, variables);
+
+        if (!res.ok) throw new Error(`Status: ${res.status}`);
+
+        const body = await res.json();
+        if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
+        
+        console.log("New document with id: ", body.data.createDocument);    // DEV
+        getAllDocuments();
+        switchToViewMode();
+    } catch (err) {
+        console.error('Create doc error:', err);    // DEV
+        alert(err.message);                     // DEV
+        // alert("Failed to create document");     // PROD
+    }
+};
+
+
+  /**
      * Delete a document based on its id after user confirmation.
      * 
      * @async
@@ -225,6 +260,44 @@ export const DocumentProvider = ({ children }) => {
         console.error("Load Document Error:", err);
       }
     };
+
+
+// -----------------------------------------------------------------------------------------------
+//                               Code Editor
+// -----------------------------------------------------------------------------------------------
+
+    /**
+     * Join a code-module-edit (update) session based on its id and populate the state title and content.
+     * 
+     * It makes sure to retrieve the latest version from the backend rather than relying on 
+     * the local documents state.
+     * 
+     * 
+     * @async
+     * @param {string} id         Code Document ID
+     * @throws                     Error if the retrieval fails
+     * @returns {Promise<void>}
+     */
+    const openCodeEditor = async (id) => {
+      try {
+        const res = await graphQLClient.query(queries.GetDocument, { id });
+  
+        if (!res.ok) throw new Error(`Failed to fetch document: ${id}`);
+  
+        const json = await res.json();
+        const doc = json.data.document;
+  
+        setCurrentDocId(doc._id);
+        setTitle(doc.title || "");
+        setContent(doc.content || "");
+        setUpdateId(doc._id);
+        setMode("code-edit");
+  
+      } catch (err) {
+        console.error("Load Code Document Error:", err);
+      }
+    };
+
 
 
 // -----------------------------------------------------------------------------------------------
@@ -365,6 +438,7 @@ export const DocumentProvider = ({ children }) => {
         emitTitleUpdate,
         emitContentUpdate,
         createDocument,
+        createCodeModule,
         deleteDocument,
         joinEditDocument,
         getAllDocuments,
@@ -379,7 +453,8 @@ export const DocumentProvider = ({ children }) => {
         chatDisplayed,
         setChatDisplayed,
         commentsDisplayed,
-        setCommentsDisplayed
+        setCommentsDisplayed,
+        openCodeEditor
       }}
     >
       {children}
