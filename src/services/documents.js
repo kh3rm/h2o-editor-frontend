@@ -59,9 +59,9 @@ const documents = {
         // Fields for a default document
         const variables = {
             title: "Untitled",
-            content: "",
+            content: { ops: [{ inserted: "\n" }] },
+            comments: [],
             code: false,
-            comments: []
         };
 
         try {

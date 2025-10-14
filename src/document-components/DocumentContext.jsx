@@ -32,20 +32,23 @@ export const DocumentProvider = ({ children }) => {
     const [mode, setMode] = useState('view');
 
 
-    // Fetches the documents once on initiation
+    // Fetches the user and documents on initiation
     useEffect(() => {
-        getAllDocuments();
+        getUserData();
     }, []);
 
 
     /**
-     * Get authenticated user, and polulate user and documents state
+     * Get authenticated user with documents
      */
-    const getUser = async () => {
+    const getUserData = async () => {
         const authenticatedUser = await usersService.getOneByAuth();
         console.log("USER:", authenticatedUser);
-        setUser(authenticatedUser);
-        setDocuments(authenticatedUser.documents);
+
+        const { documents, ...user } = authenticatedUser;
+
+        setUser(user);
+        setDocuments(documents);
     }
 
 
@@ -71,7 +74,7 @@ export const DocumentProvider = ({ children }) => {
      */
     const createDocument = async () => {
         await documentsService.create();    // TODO: try to combine create and getAll in one query?
-        getAllDocuments();
+        getUserData();
     };
     
     
