@@ -8,7 +8,7 @@
  * @throws                      Error on both fetch- and graphQl errors
  * @returns {Promise<Object>}   Parsed body
  */
-export async function validateGraphQLResponse(res) {
+export async function validateResponse(res) {
     const body = await res.json();
 
     if (!res.ok || body.errors) {

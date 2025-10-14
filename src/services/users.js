@@ -1,7 +1,7 @@
-import { graphQLClient } from './graphql/client';
+import { graphQLClient } from './graphql/gqlClient';
 import { queries } from "./graphql/queries/provider";
 import { mutations } from "./graphql/mutations/provider";
-import { validateGraphQLResponse } from "./utils";
+import { validateResponse } from "./utils";
 
 
 /**
@@ -19,7 +19,7 @@ const users = {
     getOneByAuth: async () => {
         try {
             const res = await graphQLClient.query(queries.getUser);
-            const body = await validateGraphQLResponse(res);
+            const body = await validateResponse(res);
             return body.data.user;
         } catch (err) {
             console.error('Get user:', err);   // DEV
@@ -46,7 +46,7 @@ const users = {
 
 //         try {
 //             const res = await graphQLClient.query(mutations.createDocument, variables);
-//             const body = await validateGraphQLResponse(res);
+//             const body = await validateResponse(res);
 //             return body.data.createDocument;
 //         } catch (err) {
 //             console.error('Create doc:', err);    // DEV
@@ -68,7 +68,7 @@ const users = {
 
 //         try {
 //             const res = await graphQLClient.query(mutations.updateDocument, variables);
-//             const body = await validateGraphQLResponse(res);
+//             const body = await validateResponse(res);
 //             return body.data.updateDocument;
 //         } catch (err) {
 //             console.error('Update doc:', err);    // DEV
@@ -88,7 +88,7 @@ const users = {
 //    delete: async (deleteId) => {
 //        try {
 //            const res = await graphQLClient.query(mutations.deleteDocument, { id: deleteId });
-//            const body = await validateGraphQLResponse(res);
+//            const body = await validateResponse(res);
 //            return body.data.deleteDocument;
 //         } catch (err) {
 //             console.error('Delete doc:', err);        // DEV
