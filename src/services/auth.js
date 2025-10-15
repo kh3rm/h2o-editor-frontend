@@ -1,6 +1,5 @@
-import { apiClient } from './accountClient';
+import { accountClient } from './accountClient';
 import { validateResponse } from "./utils";
-
 
 
 /**
@@ -10,9 +9,8 @@ const auth = {
 
     /**
      * JSON Web Token of signed in user
-    */
-    // token: null, // PROD
-    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiMThlNjBkYTUxYjRhMzc5NjdjYTA3YWNkIn0sImlhdCI6MTc2MDQzMTg4NCwiZXhwIjoxNzYwNTE4Mjg0fQ.OHcyJcQvSWIbDFHe_bQlbS2b2Mu-q9TOAZwB_IJ1LmY",
+     */
+    token: null,
 
     /**
      * Get existing JWT token
@@ -35,9 +33,9 @@ const auth = {
      */
     signUp: async function signUp(name, email, password) {
         try {
-            const res = await apiClient.post("signup", { name, email, password });
+            const res = await accountClient.post("signup", { name, email, password });
             const body = await validateResponse(res);
-            this.token = body.data;
+            this.token = body.data.token;
         } catch (err) {
             console.error('signUp:', err);   // DEV
             alert('Sorry, could not sign up');
@@ -55,14 +53,18 @@ const auth = {
      */
     logIn: async function logIn(email, password) {
         try {
-            const res = await apiClient.post("login", { email, password });
+            const res = await accountClient.post("login", { email, password });
             const body = await validateResponse(res);
-            this.token = body.data;
+            this.token = body.data.token;
         } catch (err) {
             console.error('LogIn:', err);   // DEV
             alert('Sorry, could not log in');
         }
     },
 };
+
+// DEV
+await auth.logIn("user1@example.com", "P4ssword");
+
 
 export default auth;

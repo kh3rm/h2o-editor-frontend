@@ -43,12 +43,15 @@ export const DocumentProvider = ({ children }) => {
      */
     const getUserData = async () => {
         const authenticatedUser = await usersService.getOneByAuth();
-        console.log("USER:", authenticatedUser);
-
-        const { documents, ...user } = authenticatedUser;
-
-        setUser(user);
-        setDocuments(documents);
+    
+        if (authenticatedUser) {
+            console.log("USER:", authenticatedUser);
+    
+            const { documents, ...user } = authenticatedUser;
+    
+            setUser(user);
+            setDocuments(documents);
+        }
     }
 
 
