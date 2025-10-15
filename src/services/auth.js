@@ -65,6 +65,7 @@ const auth = {
 
 // DEV
 await auth.logIn("user1@example.com", "P4ssword");
+// await auth.signUp("User 4", "user4@example.com", "P4ssword");
 
 
 export default auth;
