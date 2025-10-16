@@ -1,8 +1,12 @@
+
 import React, { useEffect, useRef } from "react";
 import { isEqual } from 'lodash';
 import { useDocumentContext } from "./DocumentContext";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
+
+import Chat from '../view-components/Chat';
+import Comments from '../view-components/Comments';
 
 function DocumentForm() {
   const {
@@ -14,7 +18,17 @@ function DocumentForm() {
     clientId,
     setClientId,
     localTitle,
-    setLocalTitle
+    setLocalTitle,
+    chatDisplayed,
+    setChatDisplayed,
+    commentsDisplayed,
+    setCommentsDisplayed,
+    chatMessages,
+    setChatMessages,
+    currentDocIdRef,
+    clientIdRef,
+    chatInputValue,
+    setChatInputValue
   } = useDocumentContext();
 
   const editorContainerRef = useRef(null);
@@ -23,6 +37,14 @@ function DocumentForm() {
   const isHandlingRemoteContent = useRef(false);
 
   const socket = socketRef.current;
+
+  const toggleChatVisibility = () => {
+    setChatDisplayed(chatDisplayed => !chatDisplayed);
+  };
+
+  const toggleCommentsVisibility = () => {
+      setCommentsDisplayed(commentsDisplayed => !commentsDisplayed);
+  };
 
 
 
@@ -78,6 +100,7 @@ function DocumentForm() {
 
     // Most reliable way to keep the socket-id-reference synched
     socket.on("socket-id", (id) => {
+      clientIdRef.current = id;
       setClientId(id);
       console.log("Received my current socket id:", id);
     });
@@ -97,14 +120,14 @@ function DocumentForm() {
 
 
     /**
-     * Sends initial, freshly cached content to user upon joining document edit room.
+     * Retrieves initial cached-document-state-content on join.
      * 
-     * ---NOTE-TO-SELF--- maybe use better descriptive variable name for content: e.g, intialCachedContent,
-     * and also more descriptive socket-handler-name. (important: needs to correspond to backend variable name (destructuring))
      */
-    socket.on("document-content-cached", ({ content }) => {
+    socket.on("document-initial-join", ({ content, msg }) => {
       const quill = quillEditorRef.current;
       if (!quill || !content?.ops) return;
+
+      setChatMessages(prevMessages => [...prevMessages, msg]);
 
       isHandlingRemoteContent.current = true;
       quill.setContents(content);
@@ -112,6 +135,26 @@ function DocumentForm() {
 
       lastContent.current = content;
     });
+
+    /**
+     * Sends freshly cached content snapshot to user.
+     * 
+     */
+    socket.on("chat-message-frontend", ({ id, msg }) => {
+      if (id !== currentDocIdRef.current) return;
+      setChatMessages(prevMessages => [...prevMessages, msg]);
+    });
+
+
+    //************************************** */
+
+
+
+
+
+    
+
+
 
 
     /**
@@ -161,6 +204,13 @@ function DocumentForm() {
       socket.off("document-content-cached");
       socket.off("document-title-updated");
       socket.off("socket-id");
+      socket.off("chat-message-frontend")
+
+      setChatMessages([]);
+
+      if (currentDocIdRef.current) {
+        socket.emit("leave-document-room", currentDocIdRef.current);
+      }
     };
   }, []);
 
@@ -219,28 +269,23 @@ function DocumentForm() {
 
 
   return (
+    <>
     <div>
       <input
-        className="document-title"
+        className="document-title-input"
         type="text"
         value={localTitle || ""}
         onChange={handleTitleChange}
         placeholder="Enter a document title..."
-        style={{
-          marginBottom: "1rem",
-          width: "100%",
-          fontSize: "1.25rem",
-          padding: "0.5rem",
-          marginTop: "2rem"
-        }}
       />
-      <div
+      <div className="quill-editor-container"
         ref={editorContainerRef}
-        style={{ 
-          height: "575px",
-          paddingBottom: "3rem" }}
       />
     </div>
+
+      <Chat chatVisible={chatDisplayed} toggle={toggleChatVisibility} />
+      <Comments commentsVisible={commentsDisplayed} toggle={toggleCommentsVisibility} />
+    </>
   );
 }
 
