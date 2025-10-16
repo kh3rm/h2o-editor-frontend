@@ -4,7 +4,8 @@ import SavedDocuments from './SavedDocuments';
 import DocumentForm from './DocumentForm';
 import Chat from '../view-components/Chat';
 import Comments from '../view-components/Comments';
-import CodeEditor from './CodeEditor';
+import CodeEditor from '../code-components/CodeEditor';
+import { useCodeContext } from '../code-components/CodeContext';
 
 /**
  * @component DocumentEditor
@@ -21,6 +22,10 @@ function DocumentEditor() {
         commentsDisplayed,
         setCommentsDisplayed
     } = useDocumentContext();
+    
+    const {
+        switchToViewModeCode
+    } = useCodeContext();
 
 
     const toggleChatVisibility = () => {
@@ -50,8 +55,14 @@ function DocumentEditor() {
                         </>
                     )}
                     
-                    {(mode === 'update' || mode === 'code-edit') && (
+                    {(mode === 'update' ) && (
                         <button onClick={switchToViewMode} className="top-button back-button" type="button">
+                            ← Back
+                        </button>
+                    )}
+
+                    {(mode === 'code-edit') && (
+                        <button onClick={switchToViewModeCode} className="top-button back-button code-button" type="button">
                             ← Back
                         </button>
                     )}
@@ -76,14 +87,8 @@ function DocumentEditor() {
                 )}
             </div>
 
-            {/* Chat and Comments accompanies DocumentForm in update-mode, but outside of the main-content on respective flanks. */}
-            
-            {mode === 'update' && (
-                <>
-                <Chat chatVisible={chatDisplayed} toggle={toggleChatVisibility} />
-                <Comments commentsVisible={commentsDisplayed} toggle={toggleCommentsVisibility} />
-                </>
-            )}
+            {/* Chat and Comments accompanies DocumentForm in update-mode, but outside of the main-content on respective flanks.
+            ***Update: Moved to DocumentForm*** */}
         </>
     );
 }
