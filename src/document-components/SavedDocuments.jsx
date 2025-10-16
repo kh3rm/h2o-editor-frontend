@@ -1,5 +1,6 @@
 import React from 'react';  
 import { useDocumentContext } from './DocumentContext';
+import { useCodeContext } from '../code-components/CodeContext';
 
 /**
  * @component SavedDocuments
@@ -10,8 +11,11 @@ function SavedDocuments() {
         documents,
         joinEditDocument,
         deleteDocument,
-        openCodeEditor
     } = useDocumentContext();
+
+    const {
+        openCodeEditor
+    } = useCodeContext();
 
     return (
         <div className="saved-documents">
