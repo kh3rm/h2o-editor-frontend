@@ -454,8 +454,6 @@ export const DocumentProvider = ({ children }) => {
         commentsDisplayed,
         setCommentsDisplayed,
         openCodeEditor,
-        codeOutput,
-        setCodeOutput,
         chatMessages,
         setChatMessages,
         clientIdRef,
