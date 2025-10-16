@@ -72,7 +72,7 @@ export const CodeProvider = ({ children }) => {
   // -----------------------------------------------------------------------------------------------
   
   
-  const runCodeApi = async () => {
+  const runCodeApi = async (monacoEditorRef) => {
     if (!monacoEditorRef.current) return;
 
     const codeToRun = monacoEditorRef.current.getValue();
@@ -174,7 +174,8 @@ export const CodeProvider = ({ children }) => {
         resetStateCode,
         clientCodeId,
         setClientId,
-        runCodeApi
+        runCodeApi,
+        isRemoteChange
       }}
     >
       {children}
