@@ -121,7 +121,6 @@ function DocumentForm() {
 
     /**
      * Retrieves initial cached-document-state-content on join.
-     * 
      */
     socket.on("document-initial-join", ({ content, msg }) => {
       const quill = quillEditorRef.current;
@@ -137,24 +136,12 @@ function DocumentForm() {
     });
 
     /**
-     * Sends freshly cached content snapshot to user.
-     * 
+     * Receives and sets local chat-message state from messages received from backend.
      */
     socket.on("chat-message-frontend", ({ id, msg }) => {
       if (id !== currentDocIdRef.current) return;
       setChatMessages(prevMessages => [...prevMessages, msg]);
     });
-
-
-    //************************************** */
-
-
-
-
-
-    
-
-
 
 
     /**
