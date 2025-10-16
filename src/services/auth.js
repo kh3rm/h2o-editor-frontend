@@ -21,27 +21,6 @@ const auth = {
         return this.token;
     },
     
-    // /**
-    //  * Sign up for a new account, and set token
-    //  * 
-    //  * @async
-    //  * @param {string} name
-    //  * @param {string} email
-    //  * @param {string} password
-    //  * @throws                      Error if the operation fails
-    //  * @returns {Promise<void>}            
-    //  */
-    // signUp: async function signUp(name, email, password) {
-    //     try {
-    //         const res = await accountClient.post("signup", { name, email, password });
-    //         const body = await validateResponse(res);
-    //         this.token = body.data.token;
-    //     } catch (err) {
-    //         console.error('signUp:', err);   // DEV
-    //         alert('Sorry, could not sign up');
-    //     }
-    // },
-    
     /**
      * Retrieve name, email and password from signup form
      * Sign up for a new account, and set token
@@ -63,33 +42,12 @@ const auth = {
             const body = await validateResponse(res);
             this.token = body.data.token;
 
-            console.log("SIGN UP SUCCESS:", this.getToken());
+            console.log("SIGN UP SUCCESS?", this.getToken() !== null);
         } catch (err) {
             console.error('signUp:', err);   // DEV
             alert('Sorry, could not sign up');
         }
     },
-    
-//     /**
-//      * Log in to an existing account, and set token
-//      * 
-//      * @async
-//      * @param {string} email
-//      * @param {string} password
-//      * @throws                      Error if the operation fails
-//      * @returns {Promise<void>}
-//      */
-//     logIn: async function logIn(email, password) {
-//         try {
-//             const res = await accountClient.post("login", { email, password });
-//             const body = await validateResponse(res);
-//             this.token = body.data.token;
-//         } catch (err) {
-//             console.error('LogIn:', err);   // DEV
-//             alert('Sorry, could not log in');
-//         }
-//     },
-// };
     
     /**
      * Retrieve email and password from login form
@@ -111,7 +69,7 @@ const auth = {
             const body = await validateResponse(res);
             this.token = body.data.token;
 
-            console.log("LOG IN SUCCESS:", this.getToken());
+            console.log("LOG IN SUCCESS?", this.getToken() !== null);
         } catch (err) {
             console.error('LogIn:', err);   // DEV
             alert('Sorry, could not log in');
