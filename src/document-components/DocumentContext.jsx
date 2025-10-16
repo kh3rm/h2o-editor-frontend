@@ -61,20 +61,32 @@ export const DocumentProvider = ({ children }) => {
 
   const currentDocIdRef = useRef(null);
 
+  const clientIdRef = useRef(null);
+
   const emitTitleUpdate = useRef(null);
   const emitContentUpdate = useRef(null);
 
-  // Chat/Comments-visibility
+  // Chat/Comments
 
   const [chatDisplayed, setChatDisplayed] = useState(false);
   const [commentsDisplayed, setCommentsDisplayed] = useState(false);
 
+  const [chatMessages, setChatMessages] = useState([]);
+
+  const [chatInputValue, setchatInputValue] = useState("");
 
   // Keeps the ref always in sync with the current document ID (used in throttled emits)
 
   useEffect(() => {
     currentDocIdRef.current = currentDocId;
   }, [currentDocId]);
+
+  // // Keeps the ref always in sync with the current client ID
+  useEffect(() => {
+    if (clientIdRef) {
+      clientIdRef.current = clientId;
+    }
+  }, [clientId]);
 
 
 // -----------------------------------------------------------------------------------------------
@@ -146,39 +158,40 @@ export const DocumentProvider = ({ children }) => {
   };
 
 
-  /**
-   * Create a new default 'Untitled' document, with a Quill-based empty delta-object for
-   * the empty initialized content.
-   * 
-   * @async
-   * @throws                    Error if the create-operation fails
-   * @returns {Promise<void>}
-   */
-  const createCodeModule = async () => {
-    try {
-      const variables = {
-        title: "Untitled",
-        content: { ops: [{ insert: "\n" }] },
-        code: true,
-        comments: []
-      };
+    /**
+     * Create a new default 'Untitled' code-document, with code: true and with empty
+     * { content: ""}.
+     * 
+     * @async
+     * @throws                    Error if the create-operation fails
+     * @returns {Promise<void>}
+     */
+    const createCodeModule = async () => {
+      try {
+        const variables = {
+          title: "Untitled",
+          content: { content: ""},
+          code: true,
+          comments: []
+        };
 
-        const res = await graphQLClient.query(mutations.createDocument, variables);
+          const res = await graphQLClient.query(mutations.createDocument, variables);
 
-        if (!res.ok) throw new Error(`Status: ${res.status}`);
+          if (!res.ok) throw new Error(`Status: ${res.status}`);
 
-        const body = await res.json();
-        if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
-        
-        console.log("New document with id: ", body.data.createDocument);    // DEV
-        getAllDocuments();
-        switchToViewMode();
-    } catch (err) {
-        console.error('Create doc error:', err);    // DEV
-        alert(err.message);                     // DEV
-        // alert("Failed to create document");     // PROD
-    }
-};
+          const body = await res.json();
+          if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
+          
+          console.log("New document with id: ", body.data.createDocument);    // DEV
+          getAllDocuments();
+          switchToViewMode();
+      } catch (err) {
+          console.error('Create doc error:', err);    // DEV
+          alert(err.message);                     // DEV
+          // alert("Failed to create document");     // PROD
+      }
+  };
+
 
 
   /**
@@ -307,27 +320,14 @@ export const DocumentProvider = ({ children }) => {
   useEffect(() => {
     const socket = io("http://localhost:3000");
     socketRef.current = socket;
+    
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
+      clientIdRef.current = socket.id;
+      setClientId(socket.id);
+      
       getAllDocuments();
-    });
-
-    socket.on("document-updated", (doc) => {
-      setDocuments((prev) =>
-        prev.map((d) => (d._id === doc._id ? doc : d))
-      );
-
-      if (doc._id === currentDocIdRef.current) {
-        setTitle(doc.title || "");
-        setContent(doc.content || "");
-      }
-    });
-
-    socket.on("document-title-updated", ({id, title}) => {
-      if (id === currentDocIdRef.current) {
-        setTitle(title || "");
-      }
     });
 
 
@@ -394,9 +394,7 @@ export const DocumentProvider = ({ children }) => {
 
 
   const switchToViewMode = () => {
-    if (socketRef.current !== null) {
-      socketRef.current.emit("leave-document-room", currentDocId);
-    }
+    setChatMessages([]);
     resetState();
     getAllDocuments();
     setMode("view");
@@ -409,7 +407,8 @@ export const DocumentProvider = ({ children }) => {
     setContent("");
     setUpdateId(null);
     setChatDisplayed(false);
-    setCommentsDisplayed(false)
+    setCommentsDisplayed(false);
+
 
   };
 
@@ -454,7 +453,14 @@ export const DocumentProvider = ({ children }) => {
         setChatDisplayed,
         commentsDisplayed,
         setCommentsDisplayed,
-        openCodeEditor
+        openCodeEditor,
+        codeOutput,
+        setCodeOutput,
+        chatMessages,
+        setChatMessages,
+        clientIdRef,
+        chatInputValue,
+        setchatInputValue
       }}
     >
       {children}
