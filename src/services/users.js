@@ -27,54 +27,32 @@ const users = {
         }
     },
     
-    
-//     /**
-//      * Create a new default 'Untitled' document
-//      * 
-//      * @async
-//      * @throws                      Error if the create-operation fails
-//      * @returns {Promise<string>}   id of created document
-//      */
-//     create: async () => {
-//         // Fields for a default document
-//         const variables = {
-//             title: "Untitled",
-//             content: "",
-//             code: false,
-//             comments: []
-//         };
-
-//         try {
-//             const res = await graphQLClient.query(mutations.createDocument, variables);
-//             const body = await validateResponse(res);
-//             return body.data.createDocument;
-//         } catch (err) {
-//             console.error('Create doc:', err);    // DEV
-//             alert("Sorry, could not create document");
-//         }
-//     },
 
 
-//     /**
-//      * Update document
-//      * 
-//      * @async
-//      * @param {Object} fields       Document fields { id, title, content, code, comments }
-//      * @throws                      Error if the create-operation fails
-//     * @returns {Promise<Boolean>}   true if successful
-//      */
-//     update: async (fields) => {
-//         const variables = { ...fields } ;
+    /**
+     * Update user
+     * 
+     * @async
+     * @param {Object} userFields       User userFields { name, email, password?, _id, etc}
+     * @throws                      Error if the create-operation fails
+    * @returns {Promise<Boolean>}   true if successful
+     */
+    update: async (userFields) => {
+        const variables = { 
+            name: userFields.name,
+            email: userFields.email,
+            ... (userFields.password ? { password: userFields.password } : {})  // set password if included in userFields
+        };
 
-//         try {
-//             const res = await graphQLClient.query(mutations.updateDocument, variables);
-//             const body = await validateResponse(res);
-//             return body.data.updateDocument;
-//         } catch (err) {
-//             console.error('Update doc:', err);    // DEV
-//             alert("Sorry, could not update document");
-//         }
-//     },
+        try {
+            const res = await graphQLClient.query(mutations.updateUser, variables);
+            const body = await validateResponse(res);
+            return body.data.updateUser;
+        } catch (err) {
+            console.error('Update user:', err);    // DEV
+            alert("Sorry, could not update user");
+        }
+    },
     
     
 //     /**

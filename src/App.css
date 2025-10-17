@@ -175,3 +175,16 @@ footer {
   text-decoration: underline;
 }
 
+.user-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  padding: 1rem;
+}
+
+.user-panel .user-icon {
+  margin-bottom: 0.25rem;
+}
