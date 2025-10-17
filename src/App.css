@@ -141,3 +141,37 @@ footer {
 .toggle-button {
   margin-top: 2rem;
 }
+
+
+/* TOGGLE SHOW-HIDE PASSWORD */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.password-wrapper .toggle-visibility {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #666;
+}
+
+.link {
+  color: rgb(32, 140, 249);
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
