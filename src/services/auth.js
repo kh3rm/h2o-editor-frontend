@@ -8,17 +8,21 @@ import { validateResponse } from "./utils";
 const auth = {
 
     /**
-     * JSON Web Token of signed in user
+     * Check if user is logged in
+     * 
+     * @return {boolean} true if user is logged in
      */
-    token: null,
+    isLoggedIn: function isLoggedIn() {
+        return this.getToken() !== null;
+    },
 
     /**
-     * Get existing JWT token
+     * Get existing JWT token from session storage
      * 
-     * @returns {string} token
+     * @returns {string|null} token if logged in
      */
     getToken: function getToken() {
-        return this.token;
+        return sessionStorage.getItem("token");
     },
     
     /**
@@ -35,7 +39,7 @@ const auth = {
         try {
             const res = await accountClient.post("signup", { name, email, password });
             const body = await validateResponse(res);
-            this.token = body.data.token;
+            sessionStorage.setItem("token", body.data.token);
             console.log(this.getToken() !== null ? "SIGN UP SUCCESS" : "SIGN UP FAIL");
         } catch (err) {
             console.error('signUp:', err);   // DEV
@@ -56,13 +60,22 @@ const auth = {
         try {
             const res = await accountClient.post("login", { email, password });
             const body = await validateResponse(res);
-            this.token = body.data.token;
+            sessionStorage.setItem("token", body.data.token);
             console.log(this.getToken() !== null ? "LOG IN SUCCESS" : "LOG IN FAIL");
         } catch (err) {
             console.error('LogIn:', err);   // DEV
             alert('Sorry, could not log in');
         }
     },
+
+    /**
+     * Log out user by removing token from session storage
+     * 
+     * @returns {void}
+     */
+    logOut: function logOut() {
+        sessionStorage.removeItem("token");
+    }
 };
 
 // DEV
