@@ -22,27 +22,21 @@ const auth = {
     },
     
     /**
-     * Retrieve name, email and password from signup form
      * Sign up for a new account, and set token
      * 
      * @async
-     * @param {Event} submitEvent   Triggerd when submitting signin form
+     * @param {string} name
+     * @param {string} email
+     * @param {string} password
      * @throws                      Error if the operation fails
      * @returns {Promise<void>}            
      */
-    signUp: async function signUp(event) {
+    signUp: async function signUp(name, email, password) {
         try {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const name = formData.get("name");
-            const email = formData.get("email");
-            const password = formData.get("password");
-
             const res = await accountClient.post("signup", { name, email, password });
             const body = await validateResponse(res);
             this.token = body.data.token;
-
-            console.log("SIGN UP SUCCESS?", this.getToken() !== null);
+            console.log(this.getToken() !== null ? "SIGN UP SUCCESS" : "SIGN UP FAIL");
         } catch (err) {
             console.error('signUp:', err);   // DEV
             alert('Sorry, could not sign up');
@@ -50,26 +44,20 @@ const auth = {
     },
     
     /**
-     * Retrieve email and password from login form
      * Log in to an existing account, and set token
      * 
      * @async
-     * @param {Event} submitEvent   Triggerd when submitting log in form
+     * @param {string} email
+     * @param {string} password
      * @throws                      Error if the operation fails
      * @returns {Promise<void>}
      */
-    logIn: async function logIn(event) {
+    logIn: async function logIn(email, password) {
         try {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const email = formData.get("email");
-            const password = formData.get("password");
-
             const res = await accountClient.post("login", { email, password });
             const body = await validateResponse(res);
             this.token = body.data.token;
-
-            console.log("LOG IN SUCCESS?", this.getToken() !== null);
+            console.log(this.getToken() !== null ? "LOG IN SUCCESS" : "LOG IN FAIL");
         } catch (err) {
             console.error('LogIn:', err);   // DEV
             alert('Sorry, could not log in');
