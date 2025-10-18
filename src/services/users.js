@@ -55,24 +55,23 @@ const users = {
     },
     
     
-//     /**
-//      * Delete document by id
-//      * 
-//      * @async
-//      * @param {string} deleteId     The document-id
-//      * @throws                      Error if the delete-operation fails
-//      * @returns {Promise<boolean>}  true if successful
-//     */
-//    delete: async (deleteId) => {
-//        try {
-//            const res = await graphQLClient.query(mutations.deleteDocument, { id: deleteId });
-//            const body = await validateResponse(res);
-//            return body.data.deleteDocument;
-//         } catch (err) {
-//             console.error('Delete doc:', err);        // DEV
-//             alert("Sorry, could not delete document");
-//         }
-//     },
+    /**
+     * Delete user by token.user.id
+     * 
+     * @async
+     * @throws                      Error if the delete-operation fails
+     * @returns {Promise<boolean>}  true if successful
+    */
+   delete: async () => {
+       try {
+           const res = await graphQLClient.query(mutations.deleteUser);
+           const body = await validateResponse(res);
+           return body.data.deleteUser;
+        } catch (err) {
+            console.error('Delete user:', err);        // DEV
+            alert("Sorry, could not delete user");
+        }
+    },
 
 };
 

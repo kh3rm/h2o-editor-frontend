@@ -188,3 +188,23 @@ footer {
 .user-panel .user-icon {
   margin-bottom: 0.25rem;
 }
+
+
+.logout-button {
+  margin-top: 1rem;
+}
+
+.red-delete-button {
+  margin-top: 1rem;
+  background: rgb(220, 53, 69); /* basröd */
+  color: white;
+}
+
+.red-delete-button:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(200, 35, 51, 1) 0%,
+    rgba(255, 80, 100, 1) 100%
+  );
+
+}

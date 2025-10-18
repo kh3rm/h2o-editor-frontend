@@ -18,7 +18,7 @@ function SignupForm() {
 
     return (
         <form className="signup-form" onSubmit={handleSubmit}>
-            <h3>Sign up</h3>
+            <h3>Sign up to h<sub>2</sub>o docpool</h3>
 
             <label htmlFor="name">Name</label>
             <input type="text"
