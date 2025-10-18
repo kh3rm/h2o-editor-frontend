@@ -16,7 +16,7 @@ const users = {
      * @throws                      Error on fetch- or graphQL errors
      * @returns {Promise<Object>}   User
      */
-    getOneByAuth: async () => {
+    getUserData: async () => {
         try {
             const res = await graphQLClient.query(queries.getUser);
             const body = await validateResponse(res);

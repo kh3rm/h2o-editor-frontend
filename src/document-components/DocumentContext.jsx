@@ -36,11 +36,14 @@ import { io } from "socket.io-client";
 import { throttle } from "lodash";
 import usersService from "../services/users";
 import documentsService from "../services/documents";
+import auth from "../services/auth";
 
 export const DocumentContext = createContext();
 
 export const DocumentProvider = ({ children }) => {
   const socketRef = useRef(null);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(auth.isLoggedIn());
 
   const [user, setUser] = useState(null);
 
@@ -85,6 +88,11 @@ export const DocumentProvider = ({ children }) => {
     }
   }, [clientId]);
 
+  // Switch between mode = "login" || "view" depending on isLoggedIn
+  useEffect(() => {
+    isLoggedIn ? setMode("view") : setMode("login");
+  }, [isLoggedIn]);
+
 
 // -----------------------------------------------------------------------------------------------
 //                                        GRAPHQL CRD
@@ -94,7 +102,7 @@ export const DocumentProvider = ({ children }) => {
    * Get authenticated user with documents
    */
   const getUserData = async () => {
-    const userData = await usersService.getOneByAuth();
+    const userData = await usersService.getUserData();
 
     if (userData) {
       const { documents, ...usr } = userData;
@@ -127,13 +135,13 @@ export const DocumentProvider = ({ children }) => {
    * @returns {Promise<void>}
    */
     const createDocument = async () => {
-        await documentsService.create();
-        getAllDocuments();
+      await documentsService.create();
+      getAllDocuments();
     };
 
 
     /**
-     * Create a new default 'Untitled' code-document, with code: true and with empty
+     * Create a new default 'Untitled' code-module, with code: true and with empty
      * { content: ""}.
      * 
      * @async
@@ -141,29 +149,8 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
     const createCodeModule = async () => {
-      try {
-        const variables = {
-          title: "Untitled",
-          content: { content: ""},
-          code: true,
-          comments: []
-        };
-
-          const res = await graphQLClient.query(mutations.createDocument, variables);
-
-          if (!res.ok) throw new Error(`Status: ${res.status}`);
-
-          const body = await res.json();
-          if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
-          
-          console.log("New document with id: ", body.data.createDocument);    // DEV
-          getAllDocuments();
-          switchToViewMode();
-      } catch (err) {
-          console.error('Create doc error:', err);    // DEV
-          alert(err.message);                     // DEV
-          // alert("Failed to create document");     // PROD
-      }
+      await documentsService.create(code = true);
+      getAllDocuments();
   };
 
 
@@ -339,6 +326,9 @@ export const DocumentProvider = ({ children }) => {
 //                                        VIEW/RESET
 // -----------------------------------------------------------------------------------------------
 
+  const switchToSignupMode = () => {
+    setMode("signup");
+  }
 
 
   const switchToViewMode = () => {
@@ -366,6 +356,8 @@ export const DocumentProvider = ({ children }) => {
   return (
     <DocumentContext.Provider
       value={{
+        isLoggedIn,
+        setIsLoggedIn,
         user,
         setUser,
         documents,

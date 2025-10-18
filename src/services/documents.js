@@ -52,16 +52,17 @@ const documents = {
      * Create a new default 'Untitled' document
      * 
      * @async
+     * @param {boolean} code        Code module if true
      * @throws                      Error if the create-operation fails
      * @returns {Promise<string>}   id of created document
      */
-    create: async () => {
-        // Fields for a default document
+    create: async (code = false) => {
+        // Fields for a default document / code module
         const variables = {
             title: "Untitled",
-            content: { ops: [{ insert: "\n" }] },
+            content: code ? { content: ""} : { ops: [{ insert: "\n" }] },
             comments: [],
-            code: false,
+            code,
         };
 
         try {

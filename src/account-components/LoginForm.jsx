@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDocumentContext } from '../document-components/DocumentContext';
 import auth from '../services/auth';
 
 /**
@@ -6,22 +7,25 @@ import auth from '../services/auth';
  * Let an existing user log in to the application
  */
 function LoginForm() {
+    const {
+        setMode,
+        setIsLoggedIn,
+    } = useDocumentContext();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [show, setShow] = useState(false);    // Hide password as default
 
     async function handleSubmit(event) {
         event.preventDefault();
-        auth.logIn(email, password);
+        await auth.logIn(email, password);
+        setIsLoggedIn(auth.isLoggedIn());
     }
 
     function goToResetPassword() {
         // TODO
     }
 
-    function goToSignup() {
-        // TODO
-    }
 
     return (
         <>
@@ -63,7 +67,7 @@ function LoginForm() {
         
             <p><span className="link" onClick={goToResetPassword}>Forgot your password?</span></p>
 
-            <p><span className="link" onClick={goToSignup}>Sign up to h<sub>2</sub>o docpool</span></p>
+            <p><span className="link" onClick={() => setMode("signup")}>Sign up to h<sub>2</sub>o docpool</span></p>
 
         </>
     );    

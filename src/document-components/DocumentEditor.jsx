@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useDocumentContext } from './DocumentContext';
+import { useCodeContext } from '../code-components/CodeContext';
+
+import LoginForm from '../account-components/LoginForm';
+import SignupForm from '../account-components/SignupForm';
 import SavedDocuments from './SavedDocuments';
 import DocumentForm from './DocumentForm';
 import Chat from '../view-components/Chat';
 import Comments from '../view-components/Comments';
 import CodeEditor from '../code-components/CodeEditor';
-import { useCodeContext } from '../code-components/CodeContext';
 
 /**
  * @component DocumentEditor
@@ -35,6 +38,22 @@ function DocumentEditor() {
     const toggleCommentsVisibility = () => {
         setCommentsDisplayed(commentsDisplayed => !commentsDisplayed);
     };
+
+    if (mode === "login") {
+        return (
+            <div className="main-content">
+                <LoginForm/>
+            </div>
+        );
+    }
+
+    if (mode === "signup") {
+        return (
+            <div className="main-content">
+                <SignupForm/>
+            </div>
+        );
+    }
 
     return (
         <>
