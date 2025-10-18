@@ -82,6 +82,7 @@ export const DocumentProvider = ({ children }) => {
   useEffect(() => {
     if (clientIdRef) {
       clientIdRef.current = clientId;
+    }
   }, [clientId]);
 
 

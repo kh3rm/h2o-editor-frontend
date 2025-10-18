@@ -7,8 +7,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-import { graphQLClient } from '../graphql/client';
-import { queries } from "../graphql/queries/provider";
+import documentsService from "../services/documents";
 
 import { useDocumentContext } from "../document-components/DocumentContext";
 
@@ -49,12 +48,7 @@ export const CodeProvider = ({ children }) => {
 
   const openCodeEditor = async (id) => {
     try {
-      const res = await graphQLClient.query(queries.GetDocument, { id });
-
-      if (!res.ok) throw new Error(`Failed to fetch document: ${id}`);
-
-      const json = await res.json();
-      const doc = json.data.document;
+      const doc = await documentsService.getOne(id);
 
       setCurrentCodeDocId(doc._id);
       setCodeTitle(doc.title || "");
