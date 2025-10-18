@@ -4,9 +4,7 @@ function Main() {
     return (
         <>
             <main>
-                <DocumentProvider>
-                    <DocumentEditor/>
-                </DocumentProvider>
+                <DocumentEditor/>
             </main>
         </>
     );

@@ -1,5 +1,6 @@
 import React from 'react';  
 import { useDocumentContext } from './DocumentContext';
+import { useCodeContext } from '../code-components/CodeContext';
 
 /**
  * @component SavedDocuments
@@ -8,20 +9,28 @@ import { useDocumentContext } from './DocumentContext';
 function SavedDocuments() {
     const {
         documents,
-        loadDocument,
-        deleteDocument
+        joinEditDocument,
+        deleteDocument,
     } = useDocumentContext();
+
+    const {
+        openCodeEditor
+    } = useCodeContext();
 
     return (
         <div className="saved-documents">
             <h2 className="saved-documents-h2">Saved Documents</h2>
             <div className="document-buttons-container">
 
-                {Array.isArray(documents.data) && documents.data.map(doc => (
+                {Array.isArray(documents) && documents.map(doc => (
                     <div key={doc._id} className="document-button-container">
-                        <button className="document-button" onClick={() => loadDocument(doc._id)}>
+                        <button className={`
+                            document-button
+                            ${doc.code ? 'code-button' : ''}
+                        `} onClick={() => doc.code ? openCodeEditor(doc._id) : joinEditDocument(doc._id)}>
                             {doc.title}
-                            <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(doc._id); }}>☒</span>
+                            <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(doc); }}>☒</span>
+                            <span className="id-button id-square"> _id: ...{doc._id.slice(-5)}</span>
                         </button>
                     </div>
                 ))}

@@ -1,0 +1,15 @@
+mutation UpdateDoc(
+    $id: ID!
+    $title: String!
+    $content: String!
+    $comments: [String!]!
+    $code: Boolean!
+) {
+    updateDocument(
+        id: $id
+        title: $title
+        content: $content
+        comments: $comments
+        code: $code 
+    )
+}
