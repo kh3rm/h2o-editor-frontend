@@ -1,8 +1,0 @@
-query GetDocuments {
-    documents {
-        _id
-        title
-        content
-        code
-    }
-}

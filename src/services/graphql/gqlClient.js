@@ -1,5 +1,4 @@
-// const getToken = require("");    // TODO
-
+import auth from "../auth";
 
 // const H2O_GRAPHQL_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/graphql';   // PROD
 const H2O_GRAPHQL_API_URI = 'http://localhost:3000/graphql';                            // DEV
@@ -18,14 +17,14 @@ export const graphQLClient = {
      */
     async query(query, variables = null) {
         const payload = variables ? { query, variables } : { query };
-        // const token = getToken();    TODO
+        const token = auth.getToken();
 
         return await fetch(H2O_GRAPHQL_API_URI, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
-                // Authorization: token ? `Bearer ${token}` : "" ,  // TODO
+                Authorization: token ? `Bearer ${token}` : "" ,
             },
             body: JSON.stringify(payload)
         });

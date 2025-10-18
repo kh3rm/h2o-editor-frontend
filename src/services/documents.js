@@ -1,7 +1,7 @@
-import { graphQLClient } from './graphql/client';
+import { graphQLClient } from './graphql/gqlClient';
 import { queries } from "./graphql/queries/provider";
 import { mutations } from "./graphql/mutations/provider";
-import { validateGraphQLResponse } from "./utils";
+import { validateResponse } from "./utils";
 
 
 /**
@@ -19,7 +19,7 @@ const documents = {
     getAll: async () => {
         try {
             const res = await graphQLClient.query(queries.getDocuments);
-            const body = await validateGraphQLResponse(res);
+            const body = await validateResponse(res);
             return body.data.documents;
         } catch (err) {
             console.error('Get all docs:', err);   // DEV
@@ -39,7 +39,7 @@ const documents = {
     getOne: async (id) => {
         try {
             const res = await graphQLClient.query(queries.getDocument, { id: id });
-            const body = await validateGraphQLResponse(res);
+            const body = await validateResponse(res);
             return body.data.document;
         } catch (err) {
             console.error('Get all docs:', err);   // DEV
@@ -59,14 +59,14 @@ const documents = {
         // Fields for a default document
         const variables = {
             title: "Untitled",
-            content: "",
+            content: { ops: [{ insert: "\n" }] },
+            comments: [],
             code: false,
-            comments: []
         };
 
         try {
             const res = await graphQLClient.query(mutations.createDocument, variables);
-            const body = await validateGraphQLResponse(res);
+            const body = await validateResponse(res);
             return body.data.createDocument;
         } catch (err) {
             console.error('Create doc:', err);    // DEV
@@ -88,7 +88,7 @@ const documents = {
 
         try {
             const res = await graphQLClient.query(mutations.updateDocument, variables);
-            const body = await validateGraphQLResponse(res);
+            const body = await validateResponse(res);
             return body.data.updateDocument;
         } catch (err) {
             console.error('Update doc:', err);    // DEV
@@ -108,7 +108,7 @@ const documents = {
    delete: async (deleteId) => {
        try {
            const res = await graphQLClient.query(mutations.deleteDocument, { id: deleteId });
-           const body = await validateGraphQLResponse(res);
+           const body = await validateResponse(res);
            return body.data.deleteDocument;
         } catch (err) {
             console.error('Delete doc:', err);        // DEV

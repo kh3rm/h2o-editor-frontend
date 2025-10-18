@@ -34,18 +34,15 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { throttle } from "lodash";
-
-import { graphQLClient } from '../graphql/client';
-import { queries } from "../graphql/queries/provider";
-import { mutations } from "../graphql/mutations/provider";
-
-// const H2O_EXPRESS_API_URI = 'http://localhost:3000/documents';
-// const H2O_GRAPHQL_API_URI = 'http://localhost:3000/graphql';
+import usersService from "../services/users";
+import documentsService from "../services/documents";
 
 export const DocumentContext = createContext();
 
 export const DocumentProvider = ({ children }) => {
   const socketRef = useRef(null);
+
+  const [user, setUser] = useState(null);
 
   const [documents, setDocuments] = useState([]);
   const [currentDocId, setCurrentDocId] = useState(null);
@@ -85,7 +82,6 @@ export const DocumentProvider = ({ children }) => {
   useEffect(() => {
     if (clientIdRef) {
       clientIdRef.current = clientId;
-    }
   }, [clientId]);
 
 
@@ -93,34 +89,32 @@ export const DocumentProvider = ({ children }) => {
 //                                        GRAPHQL CRD
 // -----------------------------------------------------------------------------------------------
 
+  /**
+   * Get authenticated user with documents
+   */
+  const getUserData = async () => {
+    const userData = await usersService.getOneByAuth();
 
-    /**
-     * Fetches all the documents from the backend and populates the documents state.
-     * 
-     * @async
-     * @throws                    Error if the fetch-operation fails
-     * @returns {Promise<void>}
-     */
-      const getAllDocuments = async () => {
-        try {
-            const res = await graphQLClient.query(queries.GetDocuments);
+    if (userData) {
+      const { documents, ...usr } = userData;
 
-            if (!res.ok) throw new Error(`Status: ${res.status}`);
-    
-            const body = await res.json();
-            console.log(body);  // graphQL json structure   // DEV
-            if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
+      setUser(usr);
+      setDocuments(documents);
+    }
+  }
 
-            // TODO: Let setDocuments recieve the documents array directly
-            const modifiedBody = { data: body.data.documents }    // to fit old json-api structure
-            setDocuments(body.data.documents);
-        } catch (err) {
-            console.error('Get all docs error', err);   // DEV
-            alert(err.message);                         // DEV
 
-            // alert('Sorry, could not retrieve the documents.');  // PROD
-        }
-    };
+  /**
+   * Fetch documents via graphQL endpoint, and populate documents state
+   * 
+   * @async
+   * @throws                  Fetch- or graphQL errors
+   * @returns {Promise<void>}
+   */
+  const getAllDocuments = async () => {
+    const docs = await documentsService.getAll();
+    setDocuments(docs);
+  };
 
 
 /**
@@ -132,30 +126,9 @@ export const DocumentProvider = ({ children }) => {
    * @returns {Promise<void>}
    */
     const createDocument = async () => {
-      try {
-        const variables = {
-          title: "Untitled",
-          content: { ops: [{ insert: "\n" }] },
-          code: false,
-          comments: []
-        };
-
-          const res = await graphQLClient.query(mutations.createDocument, variables);
-
-          if (!res.ok) throw new Error(`Status: ${res.status}`);
-
-          const body = await res.json();
-          if (body.errors) throw new Error(body.errors[0].message);   // still status 200 on graphQL error
-          
-          console.log("New document with id: ", body.data.createDocument);    // DEV
-          getAllDocuments();
-          switchToViewMode();
-      } catch (err) {
-          console.error('Create doc error:', err);    // DEV
-          alert(err.message);                     // DEV
-          // alert("Failed to create document");     // PROD
-      }
-  };
+        await documentsService.create();
+        getAllDocuments();
+    };
 
 
     /**
@@ -202,33 +175,17 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
   const deleteDocument = async (doc) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete the document titled "${doc.title}" with _id "...${doc._id.slice(-5)}"?`
-      )
-    ) {
+    if (confirm(
+      `Are you sure you want to delete the document titled "${doc.title}"with _id "...${doc._id.slice(-5)}"?`
+    )) {
       try {
-        const variables = {
-          id: doc._id
-        };
-  
-        const res = await graphQLClient.query(mutations.deleteDocument, variables);
+        await documentsService.delete(doc._id);
 
-  
-        if (!res.ok) throw new Error(`Status: ${res.status}`);
-        const body = await res.json();
-  
-        if (body.errors) {
-          console.error("GraphQL Errors:", body.errors);
-          throw new Error(body.errors[0].message);
-        }
-  
-        await getAllDocuments();
-
-          //...clear state and return to view-mode if the deleted doc was open
-  
+        //...clear state and return to view-mode if the deleted doc was open
         if (doc._id === currentDocIdRef.current) {
           switchToViewMode();
+        } else {
+          await getAllDocuments();
         }
       } catch (err) {
         console.error("Delete doc error:", err);
@@ -255,12 +212,7 @@ export const DocumentProvider = ({ children }) => {
      */
     const joinEditDocument = async (id) => {
       try {
-        const res = await graphQLClient.query(queries.GetDocument, { id });
-  
-        if (!res.ok) throw new Error(`Failed to fetch document: ${id}`);
-  
-        const json = await res.json();
-        const doc = json.data.document;
+        const doc = await documentsService.getOne(id);
   
         setCurrentDocId(doc._id);
         setTitle(doc.title || "");
@@ -293,12 +245,7 @@ export const DocumentProvider = ({ children }) => {
      */
     const openCodeEditor = async (id) => {
       try {
-        const res = await graphQLClient.query(queries.GetDocument, { id });
-  
-        if (!res.ok) throw new Error(`Failed to fetch document: ${id}`);
-  
-        const json = await res.json();
-        const doc = json.data.document;
+        const doc = await documentsService.getOne(id);
   
         setCurrentDocId(doc._id);
         setTitle(doc.title || "");
@@ -408,8 +355,6 @@ export const DocumentProvider = ({ children }) => {
     setUpdateId(null);
     setChatDisplayed(false);
     setCommentsDisplayed(false);
-
-
   };
 
 // -----------------------------------------------------------------------------------------------
@@ -420,6 +365,8 @@ export const DocumentProvider = ({ children }) => {
   return (
     <DocumentContext.Provider
       value={{
+        user,
+        setUser,
         documents,
         setDocuments,
         currentDocId,
