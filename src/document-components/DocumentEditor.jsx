@@ -19,6 +19,7 @@ import CodeEditor from '../code-components/CodeEditor';
 function DocumentEditor() {
     const {
         mode,
+        setMode,
         switchToViewMode,
         createDocument,
         createCodeModule,
@@ -61,7 +62,13 @@ function DocumentEditor() {
                         </>
                     )}
                     
-                    {(mode === 'update' ) && (
+                    {(mode === 'signup' || mode === 'reset-password' ) && (
+                        <button onClick={() => setMode("login")} className="top-button back-button" type="button">
+                            ← Back
+                        </button>
+                    )}
+
+                    {(mode === 'update' || mode === 'profile' ) && (
                         <button onClick={switchToViewMode} className="top-button back-button" type="button">
                             ← Back
                         </button>
