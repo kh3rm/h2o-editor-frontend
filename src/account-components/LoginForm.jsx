@@ -58,9 +58,9 @@ function LoginForm() {
                 <button type="submit" className="login-form-button">Log in</button>
             </form>
         
-            <p><span className="link" onClick={() => setMode("reset-password")}>Forgot your password?</span></p>
-
             <p><span className="link" onClick={() => setMode("signup")}>Sign up to h<sub>2</sub>o docpool</span></p>
+
+            <p><span className="link" onClick={() => setMode("reset-password")}>Forgot your password?</span></p>
 
         </>
     );    

@@ -447,6 +447,11 @@ textarea:focus,
   border: solid 1px #eedbf7;
   width: "100%",
 }
+
+form {
+  max-width: 500px;
+}
+
 /* TOGGLE SHOW-HIDE PASSWORD */
 .password-wrapper {
   position: relative;
@@ -461,7 +466,7 @@ textarea:focus,
 
 .password-wrapper .toggle-visibility {
   position: absolute;
-  top: 0.7rem;
+  top: 0.9rem;
   right: 0.7rem;
   background: none;
   border: none;
