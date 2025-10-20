@@ -29,11 +29,11 @@ function CodeEditor() {
   const mountEditor = (editor) => {
     editorRef.current = editor;
 
-    // Load the existing content or fallback to a default welcome message when empty
+    // Load the existing code or fallback to a default welcome message when empty
     const initialLoadValue =
-      codeContent.content === null || codeContent.content === '' 
+      codeContent.code === null || codeContent.code === '' 
         ? "// Welcome! This code document is empty. Enjoy the coding!"
-        : codeContent.content;
+        : codeContent.code;
     editor.setValue(initialLoadValue);
   };
 
@@ -46,7 +46,7 @@ function CodeEditor() {
     // Emit content changes to other users in room
     socket.emit("update-code-content", {
       id: currentCodeDocId,
-      content: newContent || "",
+      code: newContent || "",
     });
   };
 
@@ -79,14 +79,14 @@ function CodeEditor() {
      * Listen for incoming code content updates from other users. Uses a useRef isRemoteChange flag
      * to distinguish it from a local change and prevent an infine loop and unneccessary re-rendering.
      */
-    socket.on("code-content-updated", ({ id, content }) => {
-      if (id !== currentCodeDocId || typeof content !== "string") return;
+    socket.on("code-content-updated", ({ id, code }) => {
+      if (id !== currentCodeDocId || typeof code !== "string") return;
 
       isRemoteChange.current = true;
-      editorRef.current?.setValue(content);
+      editorRef.current?.setValue(code);
       isRemoteChange.current = false;
 
-      setCodeContent({ content });
+      setCodeContent({ code });
     });
 
     /**

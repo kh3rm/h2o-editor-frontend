@@ -70,6 +70,7 @@ export const CodeProvider = ({ children }) => {
     if (!monacoEditorRef.current) return;
 
     const codeToRun = monacoEditorRef.current.getValue();
+    console.log("codeToRun", codeToRun);
 
     const data = {
       code: btoa(codeToRun)
