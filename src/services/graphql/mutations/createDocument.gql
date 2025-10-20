@@ -1,13 +1,11 @@
 mutation CreateDoc(
     $title: String!
     $content: JSON!
-    $comments: [String!]!
     $code: Boolean!
 ) {
     createDocument(
         title: $title
         content: $content
-        comments: $comments
         code: $code 
     )
 }

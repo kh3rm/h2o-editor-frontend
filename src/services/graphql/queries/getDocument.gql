@@ -4,6 +4,5 @@ query GetDoc($id: ID!) {
         title
         content
         code
-        comments
     }
 }

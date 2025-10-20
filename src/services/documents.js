@@ -60,8 +60,7 @@ const documents = {
         // Fields for a default document / code module
         const variables = {
             title: "Untitled",
-            content: code ? { content: ""} : { ops: [{ insert: "\n" }] },
-            comments: [],
+            content: code ? { code: ""} : { ops: [{ insert: "\n" }] },
             code,
         };
 
@@ -75,28 +74,6 @@ const documents = {
         }
     },
 
-
-    /**
-     * Update document
-     * 
-     * @async
-     * @param {Object} fields       Document fields { id, title, content, code, comments }
-     * @throws                      Error if the create-operation fails
-    * @returns {Promise<Boolean>}   true if successful
-     */
-    update: async (fields) => {
-        const variables = { ...fields } ;
-
-        try {
-            const res = await graphQLClient.query(mutations.updateDocument, variables);
-            const body = await validateResponse(res);
-            return body.data.updateDocument;
-        } catch (err) {
-            console.error('Update doc:', err);    // DEV
-            alert("Sorry, could not update document");
-        }
-    },
-    
     
     /**
      * Delete document by id
