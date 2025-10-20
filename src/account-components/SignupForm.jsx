@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDocumentContext } from '../document-components/DocumentContext';
 import auth from '../services/auth';
 
 /**
@@ -6,6 +7,8 @@ import auth from '../services/auth';
  * Let a user sign up for a new account
  */
 function SignupForm() {
+    const { setIsLoggedIn } = useDocumentContext();
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -13,7 +16,8 @@ function SignupForm() {
 
     async function handleSubmit(event) {
         event.preventDefault();
-        auth.signUp(name, email, password);
+        await auth.signUp(name, email, password);
+        setIsLoggedIn(auth.isLoggedIn());
     }
 
     return (

@@ -57,7 +57,7 @@ export const DocumentProvider = ({ children }) => {
   const [clientId, setClientId] = useState(null);
 
   const [updateId, setUpdateId] = useState(null);
-  const [mode, setMode] = useState("view");
+  const [mode, setMode] = useState("");
 
   const currentDocIdRef = useRef(null);
 
@@ -90,7 +90,12 @@ export const DocumentProvider = ({ children }) => {
 
   // Switch between mode = "login" || "view" depending on isLoggedIn
   useEffect(() => {
-    isLoggedIn ? setMode("view") : setMode("login");
+    if (isLoggedIn) {
+      switchToViewMode();
+    } else {
+      resetState();
+      setMode("login");
+    }
   }, [isLoggedIn]);
 
 
@@ -262,7 +267,7 @@ export const DocumentProvider = ({ children }) => {
       clientIdRef.current = socket.id;
       setClientId(socket.id);
       
-      getAllDocuments();
+      // getAllDocuments();
     });
 
 
@@ -326,24 +331,22 @@ export const DocumentProvider = ({ children }) => {
 //                                        VIEW/RESET
 // -----------------------------------------------------------------------------------------------
 
-  const switchToSignupMode = () => {
-    setMode("signup");
-  }
-
 
   const switchToViewMode = () => {
-    setChatMessages([]);
     resetState();
-    getAllDocuments();
+    getUserData();
     setMode("view");
   };
 
 
 
   const resetState = () => {
+    setUser(null);
+    setDocuments(null);
     setTitle("");
     setContent("");
     setUpdateId(null);
+    setChatMessages([]);
     setChatDisplayed(false);
     setCommentsDisplayed(false);
   };

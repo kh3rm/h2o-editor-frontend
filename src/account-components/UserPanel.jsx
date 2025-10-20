@@ -1,20 +1,16 @@
-import { useState } from 'react';
+import { useDocumentContext } from '../document-components/DocumentContext';
 
 /**
  * @component
  * User panel at the top right corner
  */
 function UserPanel() {
-    // const { user } = useDocumentContext();
+    const { user, setMode } = useDocumentContext();
 
-    const user = {name: "User 1"};
-
-    function goToUserProfile() {
-        // TODO
-    }
+    if (!user) return;
 
     return (
-        <div className="user-panel" onClick={goToUserProfile}>
+        <div className="user-panel" onClick={() => setMode("profile")}>
 
             {/* User icon */}
             <svg

@@ -130,7 +130,8 @@ header {
   width: 100vw;
   height: 85px;
   background-color: #f5f9fc;
-  justify-content: center;
+  color: rgb(32, 140, 249);
+  justify-content: space-evenly;
   align-items: center;
   transition: background-color 0.62s ease-in-out;
 }
@@ -487,11 +488,6 @@ textarea:focus,
   cursor: pointer;
   padding: 1rem;
 }
-
-.user-panel .user-icon {
-  margin-bottom: 0.25rem;
-}
-
 
 .logout-button {
   margin-top: 1rem;

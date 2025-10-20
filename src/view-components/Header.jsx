@@ -1,4 +1,5 @@
 import logo from "../img/logo1.svg";
+import UserPanel from "../account-components/UserPanel";
 import { useDocumentContext } from "../document-components/DocumentContext";
 
 function Header() {
@@ -13,6 +14,7 @@ function Header() {
         <img src={logo} alt="Logo" style={{ width: 49, height: 49 }} />
         <h1 className="header-title">docpool</h1>
       </div>
+      <UserPanel/>
     </header>
   );
 }

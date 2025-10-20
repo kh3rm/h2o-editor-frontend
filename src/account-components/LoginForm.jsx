@@ -7,10 +7,7 @@ import auth from '../services/auth';
  * Let an existing user log in to the application
  */
 function LoginForm() {
-    const {
-        setMode,
-        setIsLoggedIn,
-    } = useDocumentContext();
+    const { setIsLoggedIn, setMode } = useDocumentContext();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,10 +17,6 @@ function LoginForm() {
         event.preventDefault();
         await auth.logIn(email, password);
         setIsLoggedIn(auth.isLoggedIn());
-    }
-
-    function goToResetPassword() {
-        // TODO
     }
 
 
@@ -65,7 +58,7 @@ function LoginForm() {
                 <button type="submit" className="login-form-button">Log in</button>
             </form>
         
-            <p><span className="link" onClick={goToResetPassword}>Forgot your password?</span></p>
+            <p><span className="link" onClick={() => setMode("reset-password")}>Forgot your password?</span></p>
 
             <p><span className="link" onClick={() => setMode("signup")}>Sign up to h<sub>2</sub>o docpool</span></p>
 

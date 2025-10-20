@@ -4,6 +4,8 @@ import { useCodeContext } from '../code-components/CodeContext';
 
 import LoginForm from '../account-components/LoginForm';
 import SignupForm from '../account-components/SignupForm';
+import ResetPasswordForm from '../account-components/ResetPasswordForm';
+import UserProfile from '../account-components/UserProfile';
 import SavedDocuments from './SavedDocuments';
 import DocumentForm from './DocumentForm';
 import Chat from '../view-components/Chat';
@@ -39,21 +41,6 @@ function DocumentEditor() {
         setCommentsDisplayed(commentsDisplayed => !commentsDisplayed);
     };
 
-    if (mode === "login") {
-        return (
-            <div className="main-content">
-                <LoginForm/>
-            </div>
-        );
-    }
-
-    if (mode === "signup") {
-        return (
-            <div className="main-content">
-                <SignupForm/>
-            </div>
-        );
-    }
 
     return (
         <>
@@ -89,7 +76,15 @@ function DocumentEditor() {
                     <br />
                 </div>
 
-                {/* Conditional rendering of the correct Document Component based on mode: */}
+                {/* Conditional rendering of the correct Account- / Document Component based on mode: */}
+
+                {mode === 'login' && <LoginForm />}
+
+                {mode === 'signup' && <SignupForm />}
+
+                {mode === 'reset-password' && <ResetPasswordForm />}
+
+                {mode === 'profile' && <UserProfile />}
 
                 {mode === 'view' && <SavedDocuments />}
 

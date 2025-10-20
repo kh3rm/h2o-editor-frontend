@@ -1,24 +1,30 @@
 import { useState } from 'react';
+import { useDocumentContext } from '../document-components/DocumentContext';
 import usersService from '../services/users';
 import auth from '../services/auth';
 
 function UserProfile() {
-    // const { user, setUser } = useDocumentContext();
+    const { 
+        user,
+        setUser,
+        switchToViewMode,
+        setIsLoggedIn,
+        resetState
+    } = useDocumentContext();
 
-    const [user, setUser] = useState({ name: "User1", email: "user1@example.com" });
     const [show, setShow] = useState(true);     // Show password as default
 
+    // if (!user) switchToViewMode();    
 
     async function handleSubmit(event) {
         event.preventDefault();
         await usersService.update(user);
-
-        // TODO: leaveUserProfile
+        switchToViewMode();
     }
 
     function logOut() {
         auth.logOut();
-        // TODO: go to login
+        setIsLoggedIn(auth.isLoggedIn());
     }
 
     async function deleteUser() {
