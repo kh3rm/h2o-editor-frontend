@@ -154,7 +154,7 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
     const createCodeModule = async () => {
-      await documentsService.create(code = true);
+      await documentsService.create(true);  // code = true
       getAllDocuments();
   };
 
