@@ -258,24 +258,30 @@ export const DocumentProvider = ({ children }) => {
 // -----------------------------------------------------------------------------------------------
 
   useEffect(() => {
-    const socket = io("http://localhost:3000");
+    if (!isLoggedIn) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      return;
+    }
+
+    const socket = io("http://localhost:3000", { auth: { token: auth.getToken() } });
     socketRef.current = socket;
-    
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
       clientIdRef.current = socket.id;
       setClientId(socket.id);
-      
-      // getAllDocuments();
     });
 
-
     return () => {
-      socket.disconnect();
-      socketRef.current = "";
-    };
-  }, []);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    }
+  }, [isLoggedIn]);
 
 
 

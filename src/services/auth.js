@@ -78,4 +78,6 @@ const auth = {
     }
 };
 
+// auth.logIn("user2@example.com", "P4ssword");    // DEV
+
 export default auth;

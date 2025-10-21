@@ -8,6 +8,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { io } from "socket.io-client";
 
 import documentsService from "../services/documents";
+import auth from "../services/auth";
 
 import { useDocumentContext } from "../document-components/DocumentContext";
 
@@ -34,7 +35,7 @@ export const CodeProvider = ({ children }) => {
   const isRemoteChange = useRef(false); // Flag to prevent emitting out remote socket updates in an endless loop
 
   // Borrowed in from DocumentContext
-  const { setMode, getAllDocuments} = useDocumentContext();
+  const { isLoggedIn, setMode, getAllDocuments} = useDocumentContext();
 
   
 
@@ -105,18 +106,28 @@ export const CodeProvider = ({ children }) => {
   // -----------------------------------------------------------------------------------------------
 
   useEffect(() => {
-    const socket = io("http://localhost:3000");
+    if (!isLoggedIn) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      return;
+    }
+
+    const socket = io("http://localhost:3000", { auth: { token: auth.getToken() } });
     socketRef.current = socket;
 
     socket.on("connect", () => {
       console.log("Code-socket connected:", socket.id);
     });
-
+    
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
-    };
-  }, []);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    }
+  }, [isLoggedIn]);
 
 
   // -----------------------------------------------------------------------------------------------
