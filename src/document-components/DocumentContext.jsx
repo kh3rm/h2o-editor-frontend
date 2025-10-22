@@ -168,24 +168,26 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
   const deleteDocument = async (doc) => {
-    if (confirm(
-      `Are you sure you want to delete the document titled "${doc.title}"with _id "...${doc._id.slice(-5)}"?`
-    )) {
-      try {
-        await documentsService.delete(doc._id);
+    if (confirm(`Are you sure you want to delete the document titled "${doc.title}"with _id "...${doc._id.slice(-5)}"?`)) {
+      await documentsService.delete(doc._id);
 
-        //...clear state and return to view-mode if the deleted doc was open
-        if (doc._id === currentDocIdRef.current) {
-          switchToViewMode();
-        } else {
-          await getAllDocuments();
-        }
-      } catch (err) {
-        console.error("Delete doc error:", err);
-        alert(err.message);
+      //...clear state and return to view-mode if the deleted doc was open
+      if (doc._id === currentDocIdRef.current) {
+        switchToViewMode();
+      } else {
+        await getAllDocuments();
       }
     }
   };
+
+
+
+  const shareDocument = async (docId) => {
+    const email = prompt("Share this document with someone, by entering a valid email address.");
+    if (email) {
+      await documentsService.share(docId, email);
+    }
+  }
 
 // -----------------------------------------------------------------------------------------------
 //                                NON-GRAPHQL SOCKET-RELATED JOIN-EDIT-DOCUMENT
@@ -356,6 +358,7 @@ export const DocumentProvider = ({ children }) => {
         createDocument,
         createCodeModule,
         deleteDocument,
+        shareDocument,
         joinEditDocument,
         getAllDocuments,
         socketTitleChange,

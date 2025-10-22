@@ -7,10 +7,12 @@ import updateUser from './updateUser.gql';
 import deleteUser from './deleteUser.gql';
 import createDocument from './createDocument.gql';
 import deleteDocument from './deleteDocument.gql';
+import shareDocument from './shareDocument.gql';
 
 export const mutations = { 
     updateUser,
     deleteUser,
     createDocument,
     deleteDocument,
+    shareDocument,
 };

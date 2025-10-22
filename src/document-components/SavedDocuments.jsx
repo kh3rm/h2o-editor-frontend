@@ -12,6 +12,7 @@ function SavedDocuments() {
         documents,
         joinEditDocument,
         deleteDocument,
+        shareDocument,
     } = useDocumentContext();
 
     const {
@@ -30,8 +31,9 @@ function SavedDocuments() {
                             ${doc.code ? 'code-button' : ''}
                         `} onClick={() => doc.code ? openCodeEditor(doc._id) : joinEditDocument(doc._id)}>
                             {doc.title}
-                            <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(doc); }}>☒</span>
                             <span className="id-button id-square"> _id: ...{doc._id.slice(-5)}</span>
+                            <span className="delete-button" onClick={(e) => { e.stopPropagation(); deleteDocument(doc); }}>☒</span>
+                            <span className="share-button" onClick={(e) => { e.stopPropagation(); shareDocument(doc._id); }}>✉</span>
                         </button>
                     </div>
                 ))}
