@@ -73,7 +73,7 @@ export const DocumentProvider = ({ children }) => {
 
   const [chatMessages, setChatMessages] = useState([]);
 
-  const [chatInputValue, setchatInputValue] = useState("");
+  const [chatInputValue, setChatInputValue] = useState("");
 
   // Keeps the ref always in sync with the current document ID (used in throttled emits)
 
@@ -216,38 +216,6 @@ export const DocumentProvider = ({ children }) => {
         socketRef.current.emit("join-document-room", doc._id);
       } catch (err) {
         console.error("Load Document Error:", err);
-      }
-    };
-
-
-// -----------------------------------------------------------------------------------------------
-//                               Code Editor
-// -----------------------------------------------------------------------------------------------
-
-    /**
-     * Join a code-module-edit (update) session based on its id and populate the state title and content.
-     * 
-     * It makes sure to retrieve the latest version from the backend rather than relying on 
-     * the local documents state.
-     * 
-     * 
-     * @async
-     * @param {string} id         Code Document ID
-     * @throws                     Error if the retrieval fails
-     * @returns {Promise<void>}
-     */
-    const openCodeEditor = async (id) => {
-      try {
-        const doc = await documentsService.getOne(id);
-  
-        setCurrentDocId(doc._id);
-        setTitle(doc.title || "");
-        setContent(doc.content || "");
-        setUpdateId(doc._id);
-        setMode("code-edit");
-  
-      } catch (err) {
-        console.error("Load Code Document Error:", err);
       }
     };
 
@@ -407,7 +375,7 @@ export const DocumentProvider = ({ children }) => {
         setChatMessages,
         clientIdRef,
         chatInputValue,
-        setchatInputValue
+        setChatInputValue
       }}
     >
       {children}
