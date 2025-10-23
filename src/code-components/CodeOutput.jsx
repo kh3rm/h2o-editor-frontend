@@ -1,3 +1,10 @@
+/**
+ * @component CodeEditor
+ * 
+ * CodeOutput-component used to showcase the result of the executed code, flanking the
+ * CodeEditor to the right.
+ */
+
 import React from "react";
 
 function CodeOutput({ output }) {
