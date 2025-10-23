@@ -42,8 +42,8 @@ const documents = {
             const body = await validateResponse(res);
             return body.data.document;
         } catch (err) {
-            console.error('Get all docs:', err);   // DEV
-            alert('Sorry, could not retrieve documents');
+            console.error('Get one doc:', err);   // DEV
+            alert('Sorry, could not retrieve document');
         }
     },
     
