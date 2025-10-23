@@ -1,6 +1,13 @@
+/**
+ * @component CodeEditor
+ * 
+ * Socket-driven Monaco CodeEditor
+ */
+
 import React, { useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { useCodeContext } from "./CodeContext";
+import { useDocumentContext } from "../document-components/DocumentContext";
 import CodeOutput from "./CodeOutput";
 
 function CodeEditor() {
@@ -8,7 +15,6 @@ function CodeEditor() {
   const editorRef = useRef(null); // A Ref to store the Monaco editor instance
 
   const {
-    socketRef,
     codeContent,
     setCodeContent,
     codeTitle,
@@ -19,6 +25,11 @@ function CodeEditor() {
     isRemoteChange,
     runCodeApi
   } = useCodeContext();
+
+  const {
+    socketRef
+  } = useDocumentContext();
+
 
   const socket = socketRef.current;
 
@@ -35,6 +46,8 @@ function CodeEditor() {
         ? "// Welcome! This code document is empty. Enjoy the coding!"
         : codeContent.code;
     editor.setValue(initialLoadValue);
+    editor.updateOptions({ fontFamily: 'Menlo' });
+
   };
 
   // -----------------------------------------------------------------------------------------------
@@ -106,6 +119,10 @@ function CodeEditor() {
       socket.off("code-content-updated");
       socket.off("code-title-updated");
       socket.off("code-error");
+
+      if (currentCodeDocId) {
+        socket.emit("leave-document-room", currentCodeDocId.current);
+      }
     };
   }, [socket, currentCodeDocId]);
 
