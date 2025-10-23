@@ -1,21 +1,18 @@
-// CodeContext.js
-
 /**
+ * @context CodeContext
+ * 
  * Slimmed down Context-provider for the code-related functionality.
  */
 
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
 
 import documentsService from "../services/documents";
-import auth from "../services/auth";
 
 import { useDocumentContext } from "../document-components/DocumentContext";
 
 export const CodeContext = createContext();
 
 export const CodeProvider = ({ children }) => {
-  const socketRef = useRef(null);
 
   const [codeTitle, setCodeTitle] = useState("");
   const [codeContent, setCodeContent] = useState("");
@@ -35,7 +32,7 @@ export const CodeProvider = ({ children }) => {
   const isRemoteChange = useRef(false); // Flag to prevent emitting out remote socket updates in an endless loop
 
   // Borrowed in from DocumentContext
-  const { isLoggedIn, setMode, getAllDocuments} = useDocumentContext();
+  const { isLoggedIn, socketRef, setMode, getAllDocuments} = useDocumentContext();
 
   
 
@@ -43,24 +40,37 @@ export const CodeProvider = ({ children }) => {
     currentCodeDocIdRef.current = currentCodeDocId;
   }, [currentCodeDocId]);
 
-  // -----------------------------------------------------------------------------------------------
-  //                               Open Code Editor
-  // -----------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------
+//                               Open Code Editor
+// -----------------------------------------------------------------------------------------------
 
-  const openCodeEditor = async (id) => {
-    try {
-      const doc = await documentsService.getOne(id);
+    /**
+     * Join a code-module-edit (update) session based on its id and populate the state title and content.
+     * 
+     * It makes sure to retrieve the latest version from the backend rather than relying on 
+     * the local documents state.
+     * 
+     * 
+     * @async
+     * @param {string} id         Code Document ID
+     * @throws                     Error if the retrieval fails
+     * @returns {Promise<void>}
+     */
+    const openCodeEditor = async (id) => {
+      try {
+        const doc = await documentsService.getOne(id);
+  
+        setCurrentDocId(doc._id);
+        setTitle(doc.title || "");
+        setContent(doc.content || "");
+        setUpdateId(doc._id);
+        setMode("code-edit");
+  
+      } catch (err) {
+        console.error("Load Code Document Error:", err);
+      }
+    };
 
-      setCurrentCodeDocId(doc._id);
-      setCodeTitle(doc.title || "");
-      setCodeContent(doc.content || "");
-      setCodeUpdateId(doc._id);
-      setMode("code-edit");
-      socketRef.current.emit("join-code-document-room", doc._id);
-    } catch (err) {
-      console.error("Load Code Document Error:", err);
-    }
-  };
 
   // -----------------------------------------------------------------------------------------------
   //                                   API Code Output
@@ -90,8 +100,8 @@ export const CodeProvider = ({ children }) => {
       const decodedOutput = atob(result.data);
       console.log("Decoded output received back from API:", decodedOutput);
 
-      // Updates the codeOutput-state with the decoded response from the API, to be showcased
-      // in the output-container flanking the code-editor to the right
+      /* Updates the codeOutput-state with the decoded response from the API, to be showcased
+      in the output-container flanking the code-editor to the right */
       setCodeOutput(decodedOutput);
 
     } catch (error) {
@@ -99,6 +109,14 @@ export const CodeProvider = ({ children }) => {
       setCodeOutput(`Error: ${error.message}`);
     }
   };
+
+
+
+
+
+
+
+  
 
 
   // -----------------------------------------------------------------------------------------------
@@ -114,7 +132,7 @@ export const CodeProvider = ({ children }) => {
       return;
     }
 
-    const socket = io("http://localhost:3000", { auth: { token: auth.getToken() } });
+    /* const socket = io("http://localhost:3000", { auth: { token: auth.getToken() } });
     socketRef.current = socket;
 
     socket.on("connect", () => {
@@ -126,7 +144,7 @@ export const CodeProvider = ({ children }) => {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
-    }
+    } */
   }, [isLoggedIn]);
 
 
@@ -136,9 +154,12 @@ export const CodeProvider = ({ children }) => {
 
 
   const switchToViewModeCode = () => {
-    if (socketRef.current && currentCodeDocId) {
+    // Leaving the code document should be taken care of in unmount in CodeEditor, will delete this
+    // 
+
+/*     if (socketRef.current && currentCodeDocId) {
       socketRef.current.emit("leave-code-document-room", currentCodeDocId);
-    }
+    } */
     resetStateCode();
     getAllDocuments();
     setMode("view");
