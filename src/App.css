@@ -1,5 +1,8 @@
 * {
   box-sizing: border-box;
+}
+
+header, footer, button, input, textarea {
   font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-weight: 400 !important;
 }
@@ -65,7 +68,7 @@ textarea {
 }
 
 .code-button {
-  font-family: 'Consolas', 'Monaco', 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace;
+  font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace;
   font-size: 15px;
   background-color:#574560;
   margin-top: 0.2rem;
@@ -360,7 +363,7 @@ textarea:focus,
 /* Code Output Container */
 
 .code-output-container {
-  font-family: 'Consolas', 'Monaco', 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace; 
+  font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace; 
   position: absolute;
   top: 210px;
   right: 10px;
@@ -378,7 +381,7 @@ textarea:focus,
 
 .code-output-inner-container p {
   font-size: 14px;
-  font-family: 'Consolas', 'Monaco', 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace;
+  font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace;
 }
 
 
@@ -512,3 +515,124 @@ form {
   );
 
 }
+
+
+
+/* Adding main bulk-changes from dev App.css here at the bottom, I have more mixed into the stylesheet that I have not parsed out yet,
+might be some lagging styling that have to be adjusted later: */
+
+
+
+.comment-quill {
+  background-color: #e2eceb;
+  padding: 0.3rem 0rem;
+  cursor: pointer;
+}
+
+.comment-textarea {
+  height: 100px;
+}
+
+
+.add-comment-button {
+  padding: 0.2rem;
+  opacity: 0.8;
+}
+
+
+
+.comments-inner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.4rem;
+  margin-bottom: 1rem;
+  max-height: 580px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.single-comment-container {
+  position: relative;
+  background-color: #fff;
+  padding: 2.2rem 0.8rem;
+  padding-bottom: 2rem;
+  min-height: 5rem;
+  font-size: 13px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color scale 1.4s ease-in-out;
+}
+
+.single-comment-container:hover {
+  background-color: #e2eceb;
+  transform: scale(1.02);
+}
+
+.single-comment-container-comment {
+  color: #1f2937;
+  font-size: 0.8rem;
+}
+
+.single-comment-container-text {
+  display: inline-block;
+  position: absolute;
+  bottom: 5px;
+  left: 4px;
+  color: #374151;
+  font-style: italic;
+  font-size: 0.7rem;
+}
+
+/* .single-comment-container-id {
+  position: absolute;
+  top: 1px;
+  left: 65%;
+  color: #758092;
+  font-style: italic;
+  font-size: 0.6rem;
+} */
+
+
+.active-comment {
+  background-color: #e2eceb;
+}
+
+.comment-edit-input {
+  padding: 0.4rem;
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  overflow-wrap: break-word;
+  white-space: normal;
+  word-break: break-word;
+  display: "block";
+  background-color: transparent;
+  color:#1f2937;
+}
+
+.comment-edit-input-button {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  padding: 0.1rem 0.3rem;
+  font-size: 12px;
+}
+
+
+.single-comment-delete {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  padding: 0.1rem 0.3rem;
+  font-size: 12px;
+  color: rgb(255, 163, 163);
+}
+
+
+
+
