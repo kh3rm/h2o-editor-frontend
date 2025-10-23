@@ -13,7 +13,7 @@ function Header() {
   const { mode } = useDocumentContext();
 
   const headerDynamicColor = {
-    backgroundColor: mode === 'code-edit' ? '#e9baff' : '#f5f9fc',
+    backgroundColor: mode === 'code-edit' ? '#e9baff' : mode === 'update' ? '#c6daea' : '#f5f9fc',
   };
   return (
     <header style={headerDynamicColor}>
