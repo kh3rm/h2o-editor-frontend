@@ -1,3 +1,10 @@
+/**
+ * @component Header
+ * Header component with title, logo and dynamic mode-conditional background color.
+ * 
+ * Houses the user-panel.
+ */
+
 import logo from "../img/logo1.svg";
 import UserPanel from "../account-components/UserPanel";
 import { useDocumentContext } from "../document-components/DocumentContext";
