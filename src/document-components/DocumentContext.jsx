@@ -98,6 +98,34 @@ export const DocumentProvider = ({ children }) => {
     }
   }, [isLoggedIn]);
 
+  // Show message from backend redirect after user clicked a link
+  useEffect(() => {
+    // Get search param 'message' (ex. ?message=invite-success)
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
+    if (!message) return;
+
+    // Actions for messages
+    const messageActions = {
+      "signup": () => setMode("signup"),
+      "invite-success": () => alert("Invitation accepted!"),
+      "invite-user-not-found": () => {
+        alert("You have to sign up before you can accept an invitation.");
+        setMode("signup");
+      },
+      "invite-link-expired": () => alert("The link has expired. You will have to be invited again."),
+      "invite-error": () => alert("Sorry, could not accept invitation due to an unexpected error."),
+    };
+
+    // Do action depending on message
+    if (messageActions[message]) {
+      messageActions[message]();
+    }
+
+    // Clean up search params
+    window.history.replaceState({}, "", window.location.pathname);
+}, []);
+
 
 // -----------------------------------------------------------------------------------------------
 //                                        GRAPHQL CRD
