@@ -1,3 +1,8 @@
+/**
+ * @component Chat
+ * Socket-driven elementary Chat-component, accompanies the quill-editor (and Comments) in DocumentForm
+ */
+
 import chatSvg from '../img/chat.svg';
 import sendSvg from '../img/send.svg';
 
@@ -5,18 +10,22 @@ import { useDocumentContext } from '../document-components/DocumentContext';
 
 function Chat({ chatVisible, toggle }) {
   const {
-    chatMessages,
-    setChatMessages,
     socketRef,
-    clientIdRef,
     currentDocIdRef,
     chatInputValue,
-    setchatInputValue
+    setChatInputValue,
+    chatMessages
   } = useDocumentContext();
 
 
+  // --------------------------------------------------------------------------------
+  //                   Chat Input Submit Handling
+  // --------------------------------------------------------------------------------
+
+
+
   const handleChange = (e) => {
-    setchatInputValue(e.target.value);
+    setChatInputValue(e.target.value);
   };
 
   const handleSubmit = (e) => {
@@ -24,19 +33,28 @@ function Chat({ chatVisible, toggle }) {
   
     const socket = socketRef.current;
     const docId = currentDocIdRef.current;
-    const clientId = clientIdRef.current;
+    const clientId = socketRef.current.id
+
+/*  console.log(socket, "socket-chat:")
+    console.log(docId, "docID-chat:")
+    console.log(clientId, "clientID-chat:") */
     
+    // Send message to backend to be emitted out to the entire room, including the sender
     if (socket && docId && clientId) {
       socket.emit("chat-message-backend", {
         id: docId,
         msg: `${clientId}: ${chatInputValue}`,
       });
   
-      setchatInputValue("");
+      setChatInputValue("");
     } else {
       console.log("Error, could not send message");
     }
   };
+
+  // --------------------------------------------------------------------------------
+  //                   Render
+  // --------------------------------------------------------------------------------
   
 
   return (
