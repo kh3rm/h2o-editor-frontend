@@ -394,7 +394,7 @@ function DocumentForm() {
         <div
           style={{
             position: "absolute",
-            top: Math.max(0, commentSelection.position.top +25),
+            top: Math.max(0, commentSelection.position.top -2),
             left: commentSelection.position.left,
             zIndex: 1000,
           }}
