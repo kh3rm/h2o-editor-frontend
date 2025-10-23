@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { useDocumentContext } from './DocumentContext';
 import { useCodeContext } from '../code-components/CodeContext';
 
@@ -8,8 +7,6 @@ import ResetPasswordForm from '../account-components/ResetPasswordForm';
 import UserProfile from '../account-components/UserProfile';
 import SavedDocuments from './SavedDocuments';
 import DocumentForm from './DocumentForm';
-import Chat from '../view-components/Chat';
-import Comments from '../view-components/Comments';
 import CodeEditor from '../code-components/CodeEditor';
 
 /**
@@ -23,24 +20,11 @@ function DocumentEditor() {
         switchToViewMode,
         createDocument,
         createCodeModule,
-        chatDisplayed,
-        setChatDisplayed,
-        commentsDisplayed,
-        setCommentsDisplayed
     } = useDocumentContext();
     
     const {
         switchToViewModeCode
     } = useCodeContext();
-
-
-    const toggleChatVisibility = () => {
-        setChatDisplayed(chatDisplayed => !chatDisplayed);
-    };
-    
-    const toggleCommentsVisibility = () => {
-        setCommentsDisplayed(commentsDisplayed => !commentsDisplayed);
-    };
 
 
     return (
