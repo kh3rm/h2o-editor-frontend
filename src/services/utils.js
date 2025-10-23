@@ -1,3 +1,5 @@
+import auth from "./auth";
+
 /**
  * Detect and throw fetch- and graphQL errors
  * Status might still be 200 on some graphQL errors
@@ -13,6 +15,14 @@ export async function validateResponse(res) {
 
     if (!res.ok || body.errors) {
         const errorMessage = body.errors?.[0]?.message || body.errors?.[0]?.detail || `HTTP ${res.status} ${res.statusText}`;
+
+        // Force log out on missing or expired token
+        if (errorMessage === "jwt expired" || errorMessage === "jwt must be provided") {
+            auth.logOut();
+            alert("Sorry, your session expired. Please log in again.")
+            window.location.reload();
+        }
+
         throw new Error(errorMessage);
     }
     
