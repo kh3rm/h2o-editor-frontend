@@ -4,6 +4,7 @@ on:
     branches:
       #- main
       - refactoring
+      - feature/mail-api
 permissions:
   contents: write
 jobs:
