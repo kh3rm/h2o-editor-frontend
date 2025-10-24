@@ -64,7 +64,7 @@ const auth = {
             console.log(this.getToken() !== null ? "LOG IN SUCCESS" : "LOG IN FAIL");
         } catch (err) {
             console.error('LogIn:', err);   // DEV
-            alert('Sorry, could not log in');
+            alert(err.message);
         }
     },
 

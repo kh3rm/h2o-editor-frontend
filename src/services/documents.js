@@ -97,9 +97,9 @@ const documents = {
 
     share: async (docId, email) => {
         try {
-           const res = await graphQLClient.query(mutations.shareDocument, { docId, email });
-           const body = await validateResponse(res);
-           return body.data.shareDocument;
+            const res = await graphQLClient.query(mutations.shareDocument, { docId, email });
+            const body = await validateResponse(res);
+            alert(`An invitation has been sent to ${email}.`);
         } catch (err) {
             console.error('Share doc:', err);        // DEV
             alert("Sorry, could not share document");

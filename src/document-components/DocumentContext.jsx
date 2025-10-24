@@ -211,7 +211,7 @@ export const DocumentProvider = ({ children }) => {
 
 
   const shareDocument = async (docId) => {
-    const email = prompt("Share this document with someone, by entering a valid email address.");
+    const email = prompt("Share this document, by entering an '@student.bth.se' address.");
     if (email) {
       await documentsService.share(docId, email);
     }
@@ -401,7 +401,7 @@ export const DocumentProvider = ({ children }) => {
         setChatDisplayed,
         commentsDisplayed,
         setCommentsDisplayed,
-        openCodeEditor,
+        // openCodeEditor,
         chatMessages,
         setChatMessages,
         clientIdRef,
