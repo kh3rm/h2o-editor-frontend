@@ -37,7 +37,7 @@ const auth = {
      */
     signUp: async function signUp(name, email, password) {
         try {
-            const res = await accountClient.post("signup", { name, email, password });
+            const res = await accountClient.post("/signup", { name, email, password });
             const body = await validateResponse(res);
             sessionStorage.setItem("token", body.data.token);
             console.log(this.getToken() !== null ? "SIGN UP SUCCESS" : "SIGN UP FAIL");
@@ -58,7 +58,7 @@ const auth = {
      */
     logIn: async function logIn(email, password) {
         try {
-            const res = await accountClient.post("login", { email, password });
+            const res = await accountClient.post("/login", { email, password });
             const body = await validateResponse(res);
             sessionStorage.setItem("token", body.data.token);
             console.log(this.getToken() !== null ? "LOG IN SUCCESS" : "LOG IN FAIL");

@@ -264,7 +264,7 @@ export const DocumentProvider = ({ children }) => {
       return;
     }
 
-    const socket = io("http://localhost:3000", { auth: { token: auth.getToken() } });
+    const socket = io(import.meta.env.VITE_SOCKET_ENDPOINT, { auth: { token: auth.getToken() } });
     socketRef.current = socket;
 
     socket.on("connect", () => {
