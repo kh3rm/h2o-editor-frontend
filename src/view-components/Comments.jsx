@@ -16,14 +16,14 @@ function Comments({ commentsVisible, toggle, comments, highlightComment, editCom
   //                   Edit Comment Handlers
   // --------------------------------------------------------------------------------
 
-  // Sets and handles the edit-comment state
+  // Set and handle the edit-comment state
   const handleEditStart = (id, currentText) => {
     setCommentEditId(id);
     setCommentEditText(currentText);
   };
 
-  // Executes editComment (passed as prop from DocumentFrom) if valid edit-comment state, updating the
-  // given blot's (comment-id) comment-text (comment-data) inside the quill content
+  // Execute editComment (passed as prop from DocumentFrom): if valid edit-comment state, update the
+  // given blot's comment-text (comment-data) inside the quill content
   const handleEditSave = () => {
     if (commentEditId && commentEditText.trim()) {
       editComment(commentEditId, commentEditText.trim());
@@ -46,6 +46,9 @@ function Comments({ commentsVisible, toggle, comments, highlightComment, editCom
       <div className={`comments-container ${commentsVisible ? "visible" : ""}`}>
         <h3 className="comments-header">Comments</h3>
         <div className="comments-inner-container">
+          {/* Map through all the comments set in state and render them in separate containers, showcasing the
+          comment and the comment-text it refers to, also adding edit and delete buttons. Clicking a given comment
+          will highlight it (= set selection) in the quill editor. */}
           {Object.keys(comments).length === 0 ? (
             <p>No comments yet</p>
           ) : (
@@ -73,8 +76,9 @@ function Comments({ commentsVisible, toggle, comments, highlightComment, editCom
                 ) : (
                   <>
                     <span className="single-comment-container-comment">
-                      {comment.text}
+                      {comment.comment}
                     </span>
+                    {/* Delete button*/}
                     <button
                       className="single-comment-delete"
                       onClick={(e) => {
@@ -82,22 +86,23 @@ function Comments({ commentsVisible, toggle, comments, highlightComment, editCom
                         deleteComment?.(id);
                       }}
                     >☒</button>
+                    {/* Edit button*/}
                     <button
                       className="comment-edit-input-button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEditStart(id, comment.text);
+                        handleEditStart(id, comment.comment);
                       }}
                     >✎</button>
                   </>
                 )}
-
-                {comment.content && (
+                {/* Keep the referenced comment text short and sweet to not take up unneccesary place in the container*/}
+                {comment.commentedText && (
                   <div className="single-comment-container-text">
                     Relating to: "
-                    {comment.content.length > 30
-                      ? comment.content.slice(0, 27) + "…"
-                      : comment.content}
+                    {comment.commentedText.length > 12
+                      ? comment.commentedText.slice(0, 12) + "..."
+                      : comment.commentedText}
                     "
                   </div>
                 )}
