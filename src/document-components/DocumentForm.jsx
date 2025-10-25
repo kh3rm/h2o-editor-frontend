@@ -13,16 +13,14 @@ import Comments from "../view-components/Comments";
 import addSvg from "../img/pen.svg";
 
 function DocumentForm() {
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   //                                   Context and State Setup
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   
   const {
     content,
-    socketContentChange,
-    localTitle,
-    setLocalTitle,
-    socketTitleChange,
+    title,
+    setTitle,
     socketRef,
     chatDisplayed,
     setChatDisplayed,
@@ -39,17 +37,17 @@ function DocumentForm() {
   const [comments, setComments] = useState({});
   const socket = socketRef.current;
 
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   //                              Custom Blot Registration
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   
   // Registers the custom inline comment-blot that wraps a text-selection in a <span> element, containing comment-id
   // and data-comment (class set to "comment-quill"). 
 
-  // Leverages Quills brilliant delta op-based structure and inner machinery to be able to create, store, update and delete
-  // comments in relation to a given text-selection in a structured way, enabling realtime sync with sockets and delta driven
-  // updates, sidestepping the need for frail, shaky, dubious index-adjusting logic for the comments for all changes
-  // made in the document, and the need for separate db-persistance.
+  // Leverages Quills brilliant delta op-based structure and Parchment-driven inner machinery to be able to create, store,
+  // update and delete comments in relation to a given text-selection in a structured way, enabling realtime sync with
+  // sockets and delta driven updates, sidestepping the need for frail, shaky, dubious index-adjusting logic for the
+  // comments for all changes made in the document, and the necessity of separate comment db-persistance.
 
   const Inline = Quill.import("blots/inline");
 
@@ -93,31 +91,47 @@ function DocumentForm() {
 
   Quill.register(CommentBlot);
 
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   //                 Comment Retrieval From Custom Blots In Document
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   
-  const retrieveCommentsFromDeltaDoc = (deltaDoc) => {
+  // Loop through all the ops in the document content, pick out all the custom comment blots,
+  // and for each, retrieve the id, comment and commented text, and return complete object.
+  // It will be set in state and used inside the Comments-component to render and showcase all the comments.
+  const retrieveAllComments = (deltaDoc) => {
     if (!deltaDoc || !deltaDoc.ops) return {};
-    const newComments = {};
+    const allComments = {};
     deltaDoc.ops.forEach((op) => {
       if (op.attributes?.comment) {
         const { id, commentData } = op.attributes.comment;
         if (id && commentData != null) {
-          newComments[id] = {
-            id,
-            text: commentData,
-            content: typeof op.insert === "string" ? op.insert : "",
-          };
+          const insert = typeof op.insert === "string" ? op.insert : "";
+          if (!insert.trim()) return;
+          if (!allComments[id]) {
+            allComments[id] = {
+              id,
+              comment: commentData,
+              commentedText: insert,
+            };
+          } else {
+            allComments[id].commentedText += insert;
+          }
         }
       }
     });
-    return newComments;
+    // Loop through and trim out whitespaces from commentedText and remove any eventual orphaned comments
+    Object.keys(allComments).forEach((id) => {
+      allComments[id].commentedText = allComments[id].commentedText.trim();
+      if (!allComments[id].commentedText) {
+        delete allComments[id];
+      }
+    });
+    return allComments;
   };
 
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   //                                 Quill Editor Setup
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   
   useEffect(() => {
     // Initialize the Quill editor
@@ -150,16 +164,16 @@ function DocumentForm() {
     // Set initial content
     if (content?.ops && content.ops.length > 0) {
       quill.setContents(content);
-      setComments(retrieveCommentsFromDeltaDoc(content));
+      setComments(retrieveAllComments(content));
     } else {
       quill.setContents({ ops: [] });
       setComments({});
     }
 
 
-  // --------------------------------------------------------------------------------
-  //                                Quill Editor/Socket - Handlers
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
+  //                    Selection Handling
+  // -----------------------------------------------------------------------------------------
 
 
     // Handle selection changes (pertaining to index, range, text and position)
@@ -168,51 +182,76 @@ function DocumentForm() {
         setCommentSelection(null);
         return;
       }
-
-      // Boilerplate orientational logic to locate the selection's position in the DOM
-      const bounds = quill.getBounds(range);
-      const editorElem = editorContainerRef.current.querySelector(".ql-editor");
-      const editorRect = editorElem.getBoundingClientRect();
-      const toolbarElem = editorContainerRef.current.querySelector(".ql-toolbar");
-      const toolbarHeight = toolbarElem?.getBoundingClientRect().height || 0;
-
-      // Sets selection-data in state to be used in blot-creation and add-comment-button-positioning
+      
+      // Get the native browser selection
+      const nativeSelection = window.getSelection();
+      if (!nativeSelection.rangeCount) {
+        setCommentSelection(null);
+        return;
+      }
+    
+      // Extract selection, calculate rendered selection-rectangle viewport coordinates
+      const selectionRange = nativeSelection.getRangeAt(0);
+      const selectionRectangle = selectionRange.getBoundingClientRect();
+      
+      // Set selection-data, to be used for button-positioning
       setCommentSelection({
         range,
-        text: quill.getText(range.index, range.length),
         position: {
-          top: bounds.top + editorRect.top + window.scrollY + editorElem.scrollTop - toolbarHeight,
-          left: bounds.left + editorRect.left + window.scrollX,
-          height: bounds.height,
+          top: selectionRectangle.top + window.scrollY - 50,
+          left: selectionRectangle.left + window.scrollX,
         },
       });
     });
 
-    // Handles local text changes
+
+
+
+  // -----------------------------------------------------------------------------------------
+  //                  Quill Content Updates Local / Remote
+  // -----------------------------------------------------------------------------------------
+
+
+    // Handle local editor content text-changes: emit content change, set new Comments-state based on new contents
     quill.on("text-change", (delta, oldDelta, source) => {
       if (source !== "user") return;
-      socketContentChange(delta);
+      emitContentChange(delta);
       const newContents = quill.getContents();
-      setComments(retrieveCommentsFromDeltaDoc(newContents));
+      setComments(retrieveAllComments(newContents));
     });
 
-    // Handles remote delta updates
+    // Handle remote delta updates: if delta is not sent from the client itself (author): apply incoming delta with
+    // quill's inbuilt updateContents(), and set new Comments-state based on new contents
     socket.on("remote-delta-content-change", ({ delta, author }) => {
       if (!quill) return;
-      if (author === socket.id) return;
+      if (author === socketRef.current?.id) return;
       const quillDelta = new Delta(delta);
       quill.updateContents(quillDelta, "api");
-      const updatedComments = retrieveCommentsFromDeltaDoc(quill.getContents());
+      const updatedComments = retrieveAllComments(quill.getContents());
       setComments(updatedComments);
     });
+  
 
-    // Handles title updates
+
+  // -----------------------------------------------------------------------------------------
+  //                  Title Updates Remote
+  // -----------------------------------------------------------------------------------------
+
+
+    // Handle basic remote title updates: (socket.to-emitted = never own update) receive title, set title, done
     socket.on("document-title-updated", ({ id, title }) => {
       if (id !== currentDocIdRef.current) return;
-      setLocalTitle(title);
+      if (author === socketRef.current.id) return;
+      setTitle(title);
     });
 
-    // Handles chat messages
+
+  // -----------------------------------------------------------------------------------------
+  //                  Chat
+  // -----------------------------------------------------------------------------------------
+
+
+    // Handle chat messages: receive message from backend, append into the chatMessage-array state
     socket.on("chat-message-frontend", ({ id, msg }) => {
       if (id !== currentDocIdRef.current) return;
       setChatMessages((prev) => {
@@ -222,27 +261,41 @@ function DocumentForm() {
       });
     });
 
-    // Handles the initial data-retrieval from the backend as a user joins a document room
+
+  // -----------------------------------------------------------------------------------------
+  //                  Initial Join
+  // -----------------------------------------------------------------------------------------
+
+
+    // Handle the initial data-retrieval from the backend as a user joins a document room
     socket.on("document-initial-join", ({ id, content, title }) => {
       if (id !== currentDocIdRef.current) return;
       if (content?.ops && content.ops.length > 0) {
         quill.setContents(content);
-        setComments(retrieveCommentsFromDeltaDoc(content));
+        setComments(retrieveAllComments(content));
       }
-      setLocalTitle(title || "");
+      if (!title) {
+        setTitle(title);
+      }
+      
     });
+
+  
+  // -----------------------------------------------------------------------------------------
+  //                 Socket Error
+  // -----------------------------------------------------------------------------------------
 
     // Handle socket errors
     socket.on("error", (error) => {
       console.error("Socket error:", error);
     });
 
-    // -----------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
 
     // Set Comments component visible on mount
     setCommentsDisplayed(true);
 
-    // -----------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
 
     // Cleanup
     return () => {
@@ -263,34 +316,54 @@ function DocumentForm() {
     };
   }, []);
 
-  // --------------------------------------------------------------------------------
-  //                                Comments Update Effect
-  // --------------------------------------------------------------------------------
-  
-  // Updates the commentsDisplayed dynamically (that are fed to the Comments-component and shown there)
-  useEffect(() => {
-    if (commentsDisplayed && quillEditorRef.current) {
-      const currentContents = quillEditorRef.current.getContents();
-      const updatedComments = retrieveCommentsFromDeltaDoc(currentContents);
-      setComments((prev) => {
-        if (JSON.stringify(prev) !== JSON.stringify(updatedComments)) {
-          return updatedComments;
-        }
-        return prev;
+
+
+  // -----------------------------------------------------------------------------------------
+  //                Content / Title Emitters
+  // -----------------------------------------------------------------------------------------
+
+  // Emit the Quill change delta to backend for processing
+  const emitContentChange = (delta) => {
+    if (currentDocIdRef.current) {
+      socketRef.current.emit("update-document-content", {
+        id: currentDocIdRef.current,
+        delta,
+        author: socket.id
       });
     }
-  }, [commentsDisplayed]);
+  };
+
+  // Emit the simpler title-change to backend for processing
+  const emitTitleChange = (newTitle) => {
+    if (currentDocIdRef.current) {
+      socketRef.current.emit("update-document-title", {
+        id: currentDocIdRef.current,
+        title: newTitle,
+      });
+    }
+  };
 
 
 
+  // -----------------------------------------------------------------------------------------
+  //                  Handle Title Change
+  // -----------------------------------------------------------------------------------------
 
-  // --------------------------------------------------------------------------------
-  //                              Custom Blot Comment Handlers
-  // --------------------------------------------------------------------------------
+  // Handle local changes in the title-form. On change: set title and emit out
+  const handleTitleChange = (e) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    emitTitleChange(newTitle);
+  };
+
+
+  // -----------------------------------------------------------------------------------------
+  //                Custom Blot Comment Handlers
+  // -----------------------------------------------------------------------------------------
   
 
-  // Handles the creation of a custom comment blot in relation to a given selection
-  const handleCommentBlotCreate = (newCommentText) => {
+  // Handle the creation of a custom comment blot in relation to a given selection
+  const commentBlotCreate = (newCommentText) => {
     const quill = quillEditorRef.current;
     const selection = quill.getSelection();
     if (!selection || selection.length === 0) return;
@@ -298,30 +371,39 @@ function DocumentForm() {
     const text = quill.getText(selection.index, selection.length);
     if (!text.trim()) return;
 
-    // Elementary way to randomize an id that is going to be plenty unique enough for this implementation
+    // Elementary way to establish an id that is going to be plenty unique enough for this implementation
     const commentId = Date.now().toString();
 
-    // First delete the given selection, then insert the new comment-custom-blot in its place, spanning the
-    // same text that was just deleted, the randomized id and the given comment submitted by the user 
+    // Retrieve any previously existing formatting for the selected text
+    const existingFormats = quill.getFormat(selection.index, selection.length);
+
+    // Merge existing formats with the new comment attribute
+    const newAttributes = {
+      ...existingFormats,
+      comment: { id: commentId, commentData: newCommentText },
+    };
+
+    // First delete the given selection, then insert the new comment-custom-blot in its place,
+    // spanning the same text that was just deleted, the randomized id and the given comment
+    // submitted by the user, whilst preserving all previous formatting.
     const commentDelta = new Delta()
       .retain(selection.index)
       .delete(selection.length)
-      .insert(text, { comment: { id: commentId, commentData: newCommentText },
-      });
+      .insert(text, newAttributes);
 
-    
-    // Update the quill editor-contents with the comment-blot-delta, set the comments based on this new
-    // state, emit the change out, reset the selection state
+    // Update the quill editor-contents with the comment-blot-delta, emit the change out,
+    // set the comments based on this new state, and reset the selection state
     quill.updateContents(commentDelta, "user");
     const updatedContents = quill.getContents();
-    setComments(retrieveCommentsFromDeltaDoc(updatedContents));
-    socketContentChange(commentDelta);
+    emitContentChange(commentDelta);
+
+    setComments(retrieveAllComments(updatedContents));
     setCommentSelection(null);
   };
 
 
-  // Handles the edit of a given comment (uses commentId to identify)
-  const handleCommentEdit = (commentId, newText) => {
+  // Handle the edit of a given comment (uses commentId to identify)
+  const commentBlotEdit = (commentId, newText) => {
     if (!newText.trim()) return;
 
     const quill = quillEditorRef.current;
@@ -332,66 +414,98 @@ function DocumentForm() {
     const index = quill.getIndex(blot);
     const text = blot.domNode.innerText;
 
-    // Similar procedure as in the creation of the blot: first delete the earlier blots span,
+    // Retrieve existing formatting for this comment's text range
+    const existingFormats = quill.getFormat(index, text.length);
+
+    // Merge existing formats with updated comment attribute
+    const newAttributes = {
+      ...existingFormats,
+      comment: { id: commentId, commentData: newText },
+    };
+
+    // Similar procedure as in the creation of the blot: first delete the earlier blots span-text,
     // and then insert the new updated blot with the same commentId and the user's submitted
-    // edited text
+    // edited text, whilst preserving existing formatting.
     const delta = new Delta()
       .retain(index)
       .delete(text.length)
-      .insert(text, { comment: { id: commentId, commentData: newText } });
+      .insert(text, newAttributes);
 
-    // Update contents, emit change, update and set the new comments-state
+    // Update content, emit change, update and set the new comments-state
     quill.updateContents(delta, "user");
-    socketContentChange(delta);
-    const updatedComments = retrieveCommentsFromDeltaDoc(quill.getContents());
+    emitContentChange(delta);
+    const updatedComments = retrieveAllComments(quill.getContents());
     setComments(updatedComments);
   };
 
-  // Handles the deletion of a given comment (uses commentId)
-  const handleCommentDelete = (commentId) => {
+
+
+    // Handle the deletion of a given comment (uses commentId), implementing slightly more elaborate
+  // logic to handle the deletion and proper reset of comments spanning multiple lines,
+  // and if so deletes the comment blot-span and inserts the text again, whilst preserving
+  // any other styling (bold, italic, color, etc.) that may exist on the text.
+  const commentBlotDelete = (commentId) => {
     const quill = quillEditorRef.current;
-    const span = quill.root.querySelector(`span.comment-quill[comment-id="${commentId}"]`);
-    if (!span) return;
+    const spans = quill.root.querySelectorAll(`span.comment-quill[comment-id="${commentId}"]`);
+    if (!spans.length) return;
 
-    const blot = Quill.find(span);
-    if (!blot) return;
+    let currentPos = 0;
+    let delta = new Delta();
+    
+    // Sort spans based on index, to enable proper deletion of a blot-comment spanning multiple lines
+    const sortedSpans = Array.from(spans).sort((a, b) => {
+      const blotA = Quill.find(a);
+      const blotB = Quill.find(b);
+      return quill.getIndex(blotA) - quill.getIndex(blotB);
+    });
 
-    const index = quill.getIndex(blot);
-    const text = blot.domNode.innerText;
+    sortedSpans.forEach((span) => {
+      const blot = Quill.find(span);
+      const index = quill.getIndex(blot);
+      const text = blot.domNode.innerText;
 
-    // Again similar syntax, only here we delete the blot, and in its place insert the text
-    // pertaining to the previous comment. Blot gone, text remains = comment deleted
-    const delta = new Delta()
-      .retain(index)
-      .delete(text.length)
-      .insert(text);
+      // Retrieve existing formats at this range
+      const formats = quill.getFormat(index, text.length);
+
+      // Remove the comment attribute but keep all other formatting intact
+      const cleanedFormats = { ...formats };
+      delete cleanedFormats.comment;
+
+      delta = delta
+        .retain(index - currentPos)
+        .delete(text.length)
+        .insert(text, cleanedFormats);
+
+      currentPos = index + text.length;
+    });
 
     // Update contents, emit change, update and set the new comments-state
     quill.updateContents(delta, "user");
-    socketContentChange(delta);
-    const updatedComments = retrieveCommentsFromDeltaDoc(quill.getContents());
+    emitContentChange(delta);
+    const updatedComments = retrieveAllComments(quill.getContents());
     setComments(updatedComments);
   };
 
-  // --------------------------------------------------------------------------------
+
+  // -----------------------------------------------------------------------------------------
   //                                        Render
-  // --------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
   
   return (
     <>
       <input
         className="document-title-input"
         type="text"
-        value={localTitle || ""}
-        onChange={(e) => {
-          setLocalTitle(e.target.value);
-          socketTitleChange(e.target.value);
-        }}
+        value={title || ""}
+        onChange={handleTitleChange}
         placeholder="Enter a document title..."
       />
       <div className="quill-editor-container" ref={editorContainerRef} />
 
-      {commentSelection && commentSelection.text.trim() && (
+      {/* If selection: render the add-comment-button above it, which when clicked triggers a prompt
+      that will take user comment input, that will be used to create a new custom comment blot span with that comment data
+      in relation to the active selection*/}
+      {commentSelection && (
         <div
           style={{
             position: "absolute",
@@ -405,7 +519,7 @@ function DocumentForm() {
             onClick={() => {
               const commentText = prompt("Enter your comment:");
               if (commentText?.trim()) {
-                handleCommentBlotCreate(commentText.trim());
+                commentBlotCreate(commentText.trim());
               }
             }}
           >
@@ -420,27 +534,50 @@ function DocumentForm() {
       )}
 
       <Chat
+        /* Props sent to Chat-component below */
         chatVisible={chatDisplayed}
         toggle={() => setChatDisplayed((p) => !p)}
         messages={chatMessages}
       />
       <Comments
+        /* Props sent to Comment-component below */
         commentsVisible={commentsDisplayed}
         toggle={() => setCommentsDisplayed((p) => !p)}
         comments={comments}
-
+        
+        // Function that enables highlighting in quill editor when clicking a given comment in the Comments-sidebar
         highlightComment={(commentId) => {
           const quill = quillEditorRef.current;
-          const span = quill.root.querySelector(`span.comment-quill[comment-id="${commentId}"]`);
-          if (span) {
-            const blot = Quill.find(span);
-            const index = quill.getIndex(blot);
-            quill.setSelection(index, span.innerText.length, "user");
-          }
+          const spans = quill.root.querySelectorAll(`span.comment-quill[comment-id="${commentId}"]`);
+          if (!spans.length) return;
+        
+          // Sort the querySelected spans relating to the comment in correct indexed order
+          const sortedSpans = Array.from(spans).sort((a, b) => {
+            const blotA = Quill.find(a);
+            const blotB = Quill.find(b);
+            return quill.getIndex(blotA) - quill.getIndex(blotB);
+          });
+        
+          // Get index of the first blot
+          const firstBlot = Quill.find(sortedSpans[0]);
+          const startIndex = quill.getIndex(firstBlot);
+        
+          // Compute selection length
+          const lastBlot = Quill.find(sortedSpans[sortedSpans.length - 1]);
+          const endIndex = quill.getIndex(lastBlot) + lastBlot.length();
+          const selectionLength = endIndex - startIndex;
+        
+          // Apply the selection
+          quill.setSelection(startIndex, selectionLength, "user");
+        
+          // Ensure visibility
+          quill.scrollSelectionIntoView();
         }}
-
-        editComment={handleCommentEdit}
-        deleteComment={handleCommentDelete}
+        
+        // Function that enables editing every comment in the Comments-sidebar
+        editComment={commentBlotEdit}
+        // Function that enables deletion for every comment in the Comments-sidebar
+        deleteComment={commentBlotDelete}
       />
     </>
   );
