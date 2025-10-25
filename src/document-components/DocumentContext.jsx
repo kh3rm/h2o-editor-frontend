@@ -98,6 +98,34 @@ export const DocumentProvider = ({ children }) => {
     }
   }, [isLoggedIn]);
 
+  // Show message from backend redirect after user clicked a link
+  useEffect(() => {
+    // Get search param 'message' (ex. ?message=invite-success)
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
+    if (!message) return;
+
+    // Actions for messages
+    const messageActions = {
+      "signup": () => setMode("signup"),
+      "invite-success": () => alert("Invitation accepted!"),
+      "invite-user-not-found": () => {
+        alert("You have to sign up before you can accept an invitation.");
+        setMode("signup");
+      },
+      "invite-link-expired": () => alert("The link has expired. You will have to be invited again."),
+      "invite-error": () => alert("Sorry, could not accept invitation due to an unexpected error."),
+    };
+
+    // Do action depending on message
+    if (messageActions[message]) {
+      messageActions[message]();
+    }
+
+    // Clean up search params
+    window.history.replaceState({}, "", window.location.pathname);
+}, []);
+
 
 // -----------------------------------------------------------------------------------------------
 //                                        GRAPHQL CRD
@@ -168,24 +196,26 @@ export const DocumentProvider = ({ children }) => {
      * @returns {Promise<void>}
      */
   const deleteDocument = async (doc) => {
-    if (confirm(
-      `Are you sure you want to delete the document titled "${doc.title}"with _id "...${doc._id.slice(-5)}"?`
-    )) {
-      try {
-        await documentsService.delete(doc._id);
+    if (confirm(`Are you sure you want to delete the document titled "${doc.title}"with _id "...${doc._id.slice(-5)}"?`)) {
+      await documentsService.delete(doc._id);
 
-        //...clear state and return to view-mode if the deleted doc was open
-        if (doc._id === currentDocIdRef.current) {
-          switchToViewMode();
-        } else {
-          await getAllDocuments();
-        }
-      } catch (err) {
-        console.error("Delete doc error:", err);
-        alert(err.message);
+      //...clear state and return to view-mode if the deleted doc was open
+      if (doc._id === currentDocIdRef.current) {
+        switchToViewMode();
+      } else {
+        await getAllDocuments();
       }
     }
   };
+
+
+
+  const shareDocument = async (docId) => {
+    const email = prompt("Share this document, by entering an '@student.bth.se' address.");
+    if (email) {
+      await documentsService.share(docId, email);
+    }
+  }
 
 // -----------------------------------------------------------------------------------------------
 //                                NON-GRAPHQL SOCKET-RELATED JOIN-EDIT-DOCUMENT
@@ -234,7 +264,7 @@ export const DocumentProvider = ({ children }) => {
       return;
     }
 
-    const socket = io("http://localhost:3000", { auth: { token: auth.getToken() } });
+    const socket = io(import.meta.env.VITE_SOCKET_ENDPOINT, { auth: { token: auth.getToken() } });
     socketRef.current = socket;
 
     socket.on("connect", () => {
@@ -356,6 +386,7 @@ export const DocumentProvider = ({ children }) => {
         createDocument,
         createCodeModule,
         deleteDocument,
+        shareDocument,
         joinEditDocument,
         getAllDocuments,
         socketTitleChange,
@@ -370,7 +401,7 @@ export const DocumentProvider = ({ children }) => {
         setChatDisplayed,
         commentsDisplayed,
         setCommentsDisplayed,
-        openCodeEditor,
+        // openCodeEditor,
         chatMessages,
         setChatMessages,
         clientIdRef,

@@ -42,8 +42,8 @@ const documents = {
             const body = await validateResponse(res);
             return body.data.document;
         } catch (err) {
-            console.error('Get all docs:', err);   // DEV
-            alert('Sorry, could not retrieve documents');
+            console.error('Get one doc:', err);   // DEV
+            alert('Sorry, could not retrieve document');
         }
     },
     
@@ -91,6 +91,18 @@ const documents = {
         } catch (err) {
             console.error('Delete doc:', err);        // DEV
             alert("Sorry, could not delete document");
+        }
+    },
+
+
+    share: async (docId, email) => {
+        try {
+            const res = await graphQLClient.query(mutations.shareDocument, { docId, email });
+            const body = await validateResponse(res);
+            alert(`An invitation has been sent to ${email}.`);
+        } catch (err) {
+            console.error('Share doc:', err);        // DEV
+            alert("Sorry, could not share document");
         }
     },
 

@@ -9,7 +9,6 @@ function UserProfile() {
         setUser,
         switchToViewMode,
         setIsLoggedIn,
-        resetState
     } = useDocumentContext();
 
     const [show, setShow] = useState(true);     // Show password as default
@@ -18,8 +17,9 @@ function UserProfile() {
 
     async function handleSubmit(event) {
         event.preventDefault();
-        await usersService.update(user);
-        switchToViewMode();
+        if (await usersService.update(user)) {
+            switchToViewMode();
+        };
     }
 
     function logOut() {

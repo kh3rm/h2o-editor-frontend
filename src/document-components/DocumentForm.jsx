@@ -9,7 +9,8 @@ import Quill, { Delta } from "quill";
 import "quill/dist/quill.snow.css";
 import Chat from "../view-components/Chat";
 import Comments from "../view-components/Comments";
-import addSvg from "../img/add.svg";
+// import addSvg from "../img/add.svg";
+import addSvg from "../img/pen.svg";
 
 function DocumentForm() {
   // --------------------------------------------------------------------------------

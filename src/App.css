@@ -174,15 +174,21 @@ footer {
   padding-right: 50px;
 }
 
+.share-button,
 .delete-button {
   position: absolute;
-  right: 2px;
+  right: 3px;
   top: -3px;
   cursor: pointer;
   background: transparent;
   border: none;
   color: rgb(246, 255, 255);
   transition: transform 0.2s ease;
+}
+
+.share-button {
+  top: unset;
+  bottom: -3px;;
 }
 
 /* .id-button {
@@ -221,6 +227,7 @@ footer {
   top:15px;
 }
 
+.share-button:hover,
 .delete-button:hover {
   transform: scale(1.1);
 }

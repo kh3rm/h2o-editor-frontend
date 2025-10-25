@@ -50,7 +50,8 @@ const users = {
             return body.data.updateUser;
         } catch (err) {
             console.error('Update user:', err);    // DEV
-            alert("Sorry, could not update user");
+            alert(err.message); // useful information for the user
+            return false;
         }
     },
     
