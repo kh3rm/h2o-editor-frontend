@@ -17,7 +17,7 @@
  * 
  * The Quill-editor structured content is now dynamically updated with every keystroke/selection change
  * via deltas, working against a last updated version in cache on the backend, which is persisted and
- * sent to the db after either: 2 seconds of user inactivity, 15 seconds general autosave, 20 new deltas,
+ * sent to the db after either: 1.2 seconds of user inactivity, 15 seconds general autosave, 10 new deltas,
  * socket(user) room exit or disconnect.
  *
  * The main parent <DocumentEditor> is enclosed:
@@ -33,7 +33,6 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import { throttle } from "lodash";
 import usersService from "../services/users";
 import documentsService from "../services/documents";
 import auth from "../services/auth";
@@ -53,7 +52,6 @@ export const DocumentProvider = ({ children }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const [localTitle, setLocalTitle] = useState(title);
   const [clientId, setClientId] = useState(null);
 
   const [updateId, setUpdateId] = useState(null);
@@ -62,9 +60,6 @@ export const DocumentProvider = ({ children }) => {
   const currentDocIdRef = useRef(null);
 
   const clientIdRef = useRef(null);
-
-  const emitTitleUpdate = useRef(null);
-  const emitContentUpdate = useRef(null);
 
   // Chat/Comments
 
@@ -281,56 +276,6 @@ export const DocumentProvider = ({ children }) => {
     }
   }, [isLoggedIn]);
 
-
-
-  /**
-   * Throttled socket-emitters - these experimental functions are used to limit how frequently
-   * socket.emit is called during fast typing.
-   *
-   * Stored in a useRef-container, and employs useEffect to only be established once,
-   * to persist across renders, without resetting the throttle timer (which would kind
-   * of defeat the point).
-   * 
-   * (Might still prove useful for the more basic, uncomplicated title-updates, the content-delta flow
-   * handles the throttling towards the db on the backend instead. To be decided.)
-   */
-
-  useEffect(() => {
-    emitTitleUpdate.current = throttle((newTitle) => {
-      if (currentDocIdRef.current) {
-        socketRef.current.emit("update-document-title", {
-          id: currentDocIdRef.current,
-          title: newTitle
-        });
-      }
-    }, 175);
-  
-    emitContentUpdate.current = throttle((delta) => {
-      if (currentDocIdRef.current) {
-        socketRef.current.emit("update-document-content", {
-          id: currentDocIdRef.current,
-          delta
-        });
-      }
-    }, 0);
-  }, []);
-
-  
-
-/**
- * These functions update the document’s title and content in local state while 
- * using throttled emitters to limit how often socket.emit is called during rapid typing.
- */
-
-  const socketTitleChange = (newTitle) => {
-    setTitle(newTitle);
-    emitTitleUpdate.current(newTitle);
-  };
-
-  const socketContentChange = (delta) => {
-    emitContentUpdate.current(delta);
-  };
-
 // -----------------------------------------------------------------------------------------------
 //                                        VIEW/RESET
 // -----------------------------------------------------------------------------------------------
@@ -381,27 +326,20 @@ export const DocumentProvider = ({ children }) => {
         setUpdateId,
         socketRef,
         currentDocIdRef,
-        emitTitleUpdate,
-        emitContentUpdate,
         createDocument,
         createCodeModule,
         deleteDocument,
         shareDocument,
         joinEditDocument,
         getAllDocuments,
-        socketTitleChange,
-        socketContentChange,
         switchToViewMode,
         resetState,
         clientId,
         setClientId,
-        localTitle,
-        setLocalTitle,
         chatDisplayed,
         setChatDisplayed,
         commentsDisplayed,
         setCommentsDisplayed,
-        // openCodeEditor,
         chatMessages,
         setChatMessages,
         clientIdRef,
