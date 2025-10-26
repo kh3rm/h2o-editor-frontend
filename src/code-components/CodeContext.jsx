@@ -1,6 +1,6 @@
+// CodeContext.js
+
 /**
- * @context CodeContext
- * 
  * Slimmed down Context-provider for the code-related functionality.
  */
 
@@ -31,8 +31,8 @@ export const CodeProvider = ({ children }) => {
 
   const isRemoteChange = useRef(false); // Flag to prevent emitting out remote socket updates in an endless loop
 
-  // Borrowed in from DocumentContext
-  const { isLoggedIn, socketRef, setMode, getAllDocuments} = useDocumentContext();
+  // Some helpful assistance from DocumentContext
+  const { setMode, getAllDocuments, socketRef} = useDocumentContext();
 
   
 
@@ -40,37 +40,25 @@ export const CodeProvider = ({ children }) => {
     currentCodeDocIdRef.current = currentCodeDocId;
   }, [currentCodeDocId]);
 
-// -----------------------------------------------------------------------------------------------
-//                               Open Code Editor
-// -----------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------
+  //                               Open Code Editor
+  // -----------------------------------------------------------------------------------------------
 
-    /**
-     * Join a code-module-edit (update) session based on its id and populate the state title and content.
-     * 
-     * It makes sure to retrieve the latest version from the backend rather than relying on 
-     * the local documents state.
-     * 
-     * 
-     * @async
-     * @param {string} id         Code Document ID
-     * @throws                     Error if the retrieval fails
-     * @returns {Promise<void>}
-     */
-    const openCodeEditor = async (id) => {
-      try {
-        const doc = await documentsService.getOne(id);
-  
-        setCurrentDocId(doc._id);
-        setTitle(doc.title || "");
-        setContent(doc.content || "");
-        setUpdateId(doc._id);
-        setMode("code-edit");
-  
-      } catch (err) {
-        console.error("Load Code Document Error:", err);
-      }
-    };
+  const openCodeEditor = async (id) => {
+    try {
+      const doc = await documentsService.getOne(id);
 
+
+      setCurrentCodeDocId(doc._id);
+      setCodeTitle(doc.title || "");
+      setCodeContent(doc.content || "");
+      setCodeUpdateId(doc._id);
+      setMode("code-edit");
+      socketRef.current.emit("join-code-document-room", doc._id);
+    } catch (err) {
+      console.error("Load Code Document Error:", err);
+    }
+  };
 
   // -----------------------------------------------------------------------------------------------
   //                                   API Code Output
@@ -81,7 +69,6 @@ export const CodeProvider = ({ children }) => {
     if (!monacoEditorRef.current) return;
 
     const codeToRun = monacoEditorRef.current.getValue();
-    console.log("codeToRun", codeToRun);
 
     const data = {
       code: btoa(codeToRun)
@@ -100,8 +87,8 @@ export const CodeProvider = ({ children }) => {
       const decodedOutput = atob(result.data);
       console.log("Decoded output received back from API:", decodedOutput);
 
-      /* Updates the codeOutput-state with the decoded response from the API, to be showcased
-      in the output-container flanking the code-editor to the right */
+      // Updates the codeOutput-state with the decoded response from the API, to be showcased
+      // in the output-container flanking the code-editor to the right
       setCodeOutput(decodedOutput);
 
     } catch (error) {
@@ -111,55 +98,15 @@ export const CodeProvider = ({ children }) => {
   };
 
 
-
-
-
-
-
-  
-
-
-  // -----------------------------------------------------------------------------------------------
-  //                                        SOCKET
-  // -----------------------------------------------------------------------------------------------
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-      return;
-    }
-
-    /* const socket = io(import.meta.env.VITE_SOCKET_ENDPOINT, { auth: { token: auth.getToken() } });
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      console.log("Code-socket connected:", socket.id);
-    });
-    
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-    } */
-  }, [isLoggedIn]);
-
-
   // -----------------------------------------------------------------------------------------------
   //                                        RESET / VIEW
   // -----------------------------------------------------------------------------------------------
 
 
   const switchToViewModeCode = () => {
-    // Leaving the code document should be taken care of in unmount in CodeEditor, will delete this
-    // 
-
-/*     if (socketRef.current && currentCodeDocId) {
+    if (socketRef.current && currentCodeDocId) {
       socketRef.current.emit("leave-code-document-room", currentCodeDocId);
-    } */
+    }
     resetStateCode();
     getAllDocuments();
     setMode("view");
