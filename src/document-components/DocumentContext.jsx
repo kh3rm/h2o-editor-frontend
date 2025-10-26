@@ -238,7 +238,7 @@ export const DocumentProvider = ({ children }) => {
         setUpdateId(doc._id);
         setMode("update");
   
-        socketRef.current.emit("join-document-room", doc._id);
+        socketRef.current.emit("join-document-room", doc._id, user.name);
       } catch (err) {
         console.error("Load Document Error:", err);
       }
@@ -290,7 +290,6 @@ export const DocumentProvider = ({ children }) => {
 
 
   const resetState = () => {
-    setUser(null);
     setDocuments(null);
     setTitle("");
     setContent("");

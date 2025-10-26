@@ -14,7 +14,8 @@ function Chat({ chatVisible, toggle }) {
     currentDocIdRef,
     chatInputValue,
     setChatInputValue,
-    chatMessages
+    chatMessages,
+    user
   } = useDocumentContext();
 
 
@@ -43,7 +44,7 @@ function Chat({ chatVisible, toggle }) {
     if (socket && docId && clientId) {
       socket.emit("chat-message-backend", {
         id: docId,
-        msg: `${clientId}: ${chatInputValue}`,
+        msg: `${user.name}: ${chatInputValue}`,
       });
   
       setChatInputValue("");

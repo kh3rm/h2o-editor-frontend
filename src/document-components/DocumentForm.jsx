@@ -28,7 +28,8 @@ function DocumentForm() {
     setCommentsDisplayed,
     currentDocIdRef,
     chatMessages,
-    setChatMessages
+    setChatMessages,
+    user
   } = useDocumentContext();
 
   const editorContainerRef = useRef(null);
@@ -41,8 +42,8 @@ function DocumentForm() {
   //                              Custom Blot Registration
   // -----------------------------------------------------------------------------------------
   
-  // Registers the custom inline comment-blot that wraps a text-selection in a <span> element, containing comment-id
-  // and data-comment (class set to "comment-quill"). 
+  // Registers the custom inline comment-blot that wraps a text-selection in a <span> element, each containing
+  // comment-id, username and data-comment (class set to "comment-quill"). 
 
   // Leverages Quills brilliant delta op-based structure and Parchment-driven inner machinery to be able to create, store,
   // update and delete comments in relation to a given text-selection in a structured way, enabling realtime sync with
@@ -59,6 +60,7 @@ function DocumentForm() {
     static create(value) {
       const commentSpan = super.create();
       commentSpan.setAttribute("comment-id", value.id);
+      commentSpan.setAttribute("username", value.username)
       commentSpan.setAttribute("data-comment", value.commentData);
       return commentSpan;
     }
@@ -66,6 +68,7 @@ function DocumentForm() {
     static formats(domNode) {
       return {
         id: domNode.getAttribute("comment-id"),
+        username: domNode.getAttribute("username"),
         commentData: domNode.getAttribute("data-comment"),
       };
     }
@@ -73,6 +76,7 @@ function DocumentForm() {
     format(name, value) {
       if (name === "comment" && value) {
         this.domNode.setAttribute("comment-id", value.id);
+        this.domNode.setAttribute("username", value.username);
         this.domNode.setAttribute("data-comment", value.commentData);
       } else {
         super.format(name, value);
@@ -81,9 +85,10 @@ function DocumentForm() {
 
     static value(domNode) {
       const commentId = domNode.getAttribute("comment-id");
+      const username = domNode.getAttribute("username")
       const commentText = domNode.getAttribute("data-comment");
       if (commentId) {
-        return { id: commentId, commentData: commentText };
+        return { id: commentId, username, commentData: commentText};
       }
       return null;
     }
@@ -96,14 +101,14 @@ function DocumentForm() {
   // -----------------------------------------------------------------------------------------
   
   // Loop through all the ops in the document content, pick out all the custom comment blots,
-  // and for each, retrieve the id, comment and commented text, and return complete object.
+  // and for each, retrieve the id, username, comment and commented text, and return complete object.
   // It will be set in state and used inside the Comments-component to render and showcase all the comments.
   const retrieveAllComments = (deltaDoc) => {
     if (!deltaDoc || !deltaDoc.ops) return {};
     const allComments = {};
     deltaDoc.ops.forEach((op) => {
       if (op.attributes?.comment) {
-        const { id, commentData } = op.attributes.comment;
+        const { id, commentData, username } = op.attributes.comment;
         if (id && commentData != null) {
           const insert = typeof op.insert === "string" ? op.insert : "";
           if (!insert.trim()) return;
@@ -112,6 +117,7 @@ function DocumentForm() {
               id,
               comment: commentData,
               commentedText: insert,
+              username,
             };
           } else {
             allComments[id].commentedText += insert;
@@ -119,7 +125,7 @@ function DocumentForm() {
         }
       }
     });
-    // Loop through and trim out whitespaces from commentedText and remove any eventual orphaned comments
+    // Trim whitespaces and remove orphaned comments
     Object.keys(allComments).forEach((id) => {
       allComments[id].commentedText = allComments[id].commentedText.trim();
       if (!allComments[id].commentedText) {
@@ -380,7 +386,7 @@ function DocumentForm() {
     // Merge existing formats with the new comment attribute
     const newAttributes = {
       ...existingFormats,
-      comment: { id: commentId, commentData: newCommentText },
+      comment: { id: commentId, username: user.name, commentData: newCommentText },
     };
 
     // First delete the given selection, then insert the new comment-custom-blot in its place,
@@ -420,7 +426,7 @@ function DocumentForm() {
     // Merge existing formats with updated comment attribute
     const newAttributes = {
       ...existingFormats,
-      comment: { id: commentId, commentData: newText },
+      comment: { id: commentId, username: existingFormats.comment?.username, commentData: newText },
     };
 
     // Similar procedure as in the creation of the blot: first delete the earlier blots span-text,
@@ -440,9 +446,9 @@ function DocumentForm() {
 
 
 
-    // Handle the deletion of a given comment (uses commentId), implementing slightly more elaborate
-  // logic to handle the deletion and proper reset of comments spanning multiple lines,
-  // and if so deletes the comment blot-span and inserts the text again, whilst preserving
+  // Handle the deletion of a given comment (uses commentId), implementing slightly more elaborate
+  // logic to handle the deletion and proper reset of comments spanning multiple lines.
+  // Deletes the comment blot-span and inserts the text again, whilst preserving
   // any other styling (bold, italic, color, etc.) that may exist on the text.
   const commentBlotDelete = (commentId) => {
     const quill = quillEditorRef.current;
@@ -475,6 +481,9 @@ function DocumentForm() {
         .retain(index - currentPos)
         .delete(text.length)
         .insert(text, cleanedFormats);
+
+        // Remove the blot span, insert only the text, maintaining previous formatting:
+        // Blot gone, text remains = comment deleted
 
       currentPos = index + text.length;
     });
@@ -574,7 +583,7 @@ function DocumentForm() {
           quill.scrollSelectionIntoView();
         }}
         
-        // Function that enables editing every comment in the Comments-sidebar
+        // Function that enables editing for every comment in the Comments-sidebar
         editComment={commentBlotEdit}
         // Function that enables deletion for every comment in the Comments-sidebar
         deleteComment={commentBlotDelete}

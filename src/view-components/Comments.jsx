@@ -50,7 +50,7 @@ function Comments({ commentsVisible, toggle, comments, highlightComment, editCom
           comment and the comment-text it refers to, also adding edit and delete buttons. Clicking a given comment
           will highlight it (= set selection) in the quill editor. */}
           {Object.keys(comments).length === 0 ? (
-            <p>No comments yet</p>
+            <p>No comments yet...</p>
           ) : (
             Object.entries(comments).map(([id, comment]) => (
               <div
@@ -58,6 +58,7 @@ function Comments({ commentsVisible, toggle, comments, highlightComment, editCom
                 className="single-comment-container"
                 onClick={() => highlightComment?.(id)}
               >
+                <div className="single-comment-container-username">{comment.username}</div>
                 {commentEditId === id ? (
                   <input
                     type="text"
@@ -99,11 +100,7 @@ function Comments({ commentsVisible, toggle, comments, highlightComment, editCom
                 {/* Keep the referenced comment text short and sweet to not take up unneccesary place in the container*/}
                 {comment.commentedText && (
                   <div className="single-comment-container-text">
-                    Relating to: "
-                    {comment.commentedText.length > 12
-                      ? comment.commentedText.slice(0, 12) + "..."
-                      : comment.commentedText}
-                    "
+                    Relating to: "{comment.commentedText}"
                   </div>
                 )}
               </div>
