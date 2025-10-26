@@ -12,16 +12,17 @@ import { useDocumentContext } from "../document-components/DocumentContext";
 function Header() {
   const { mode } = useDocumentContext();
 
-  const headerDynamicColor = {
-    backgroundColor: mode === 'code-edit' ? '#e9baff' : mode === 'update' ? '#c6daea' : '#f5f9fc',
-  };
   return (
-    <header style={headerDynamicColor}>
+    <header className={`header ${mode}`}>
       <div className="header-logo">
         <img src={logo} alt="Logo" style={{ width: 49, height: 49 }} />
-        <h1 className="header-title">docpool</h1>
+        <h1 className="header-title">
+          <span className="code-pre code-symbol" data-mode={mode}>{"<"}</span>
+          <span className="title-text">docpool</span>
+          <span className="code-post code-symbol" data-mode={mode}>{"⁄>"}</span>
+        </h1>
       </div>
-      <UserPanel/>
+      <UserPanel />
     </header>
   );
 }
