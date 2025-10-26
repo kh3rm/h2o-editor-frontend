@@ -247,7 +247,6 @@ function DocumentForm() {
     // Handle basic remote title updates: (socket.to-emitted = never own update) receive title, set title, done
     socket.on("document-title-updated", ({ id, title }) => {
       if (id !== currentDocIdRef.current) return;
-      if (author === socketRef.current.id) return;
       setTitle(title);
     });
 
