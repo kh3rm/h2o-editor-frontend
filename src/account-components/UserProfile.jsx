@@ -37,7 +37,7 @@ function UserProfile() {
     return (
         <>
             <form className="profile-form" onSubmit={handleSubmit}>
-                <h3>User profile</h3>
+                <h2 class="user-profile-header">User profile</h2>
 
                 <label htmlFor="name">Name</label>
                 <input type="text"

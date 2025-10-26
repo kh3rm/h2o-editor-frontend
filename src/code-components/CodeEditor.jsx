@@ -148,7 +148,7 @@ function CodeEditor() {
           onMount={mountEditor}
           onChange={handleEditorChange}
         />
-        <button className="code-button" onClick={() => runCodeApi(editorRef)} >➤ Run Code</button>
+        <button className="code-button run-code-button" onClick={() => runCodeApi(editorRef)} >➤ Run Code</button>
       </div>
       <CodeOutput output={codeOutput} />
     </>

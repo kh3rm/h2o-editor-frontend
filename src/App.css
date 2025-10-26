@@ -71,7 +71,6 @@ textarea {
   font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace;
   font-size: 15px;
   background-color:#574560;
-  margin-top: 0.2rem;
 }
 
 .code-button:hover {
@@ -126,19 +125,31 @@ button:focus {
   border-bottom: 2px dotted rgb(201, 201, 208);
   font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-weight: 400 !important;
+  letter-spacing: 2px;
 }
 
 header {
   display: flex;
   width: 100vw;
   height: 85px;
-  background-color: #f5f9fc;
-  color: rgb(32, 140, 249);
+  background-color: var(--background-header-view);
+  color: var(--color-header-text);
   justify-content: space-evenly;
   align-items: center;
   transition: background-color 0.62s ease-in-out;
 }
 
+.header.code-edit {
+  background-color: var(--background-header-code);
+}
+
+.header.update {
+  background-color: var(--background-header-editor);
+}
+
+.header:not(.code-edit):not(.update) {
+  background-color: var(--background-header-view);
+}
 
 .header-logo {
   display: flex;
@@ -148,10 +159,46 @@ header {
 
 .header-title {
   position: relative;
+  display: inline-block;
+  width: 100px;
   margin-left: 2rem;
   font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-weight: 400 !important;
+  font-size: 44px;
+  font-display: swap;
+  text-align: center;
 }
+
+.title-text {
+  display: inline-block;
+}
+
+.code-symbol {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(-48px);
+  transition: opacity 0.33s ease-in-out, transform 0.39s ease-out;
+}
+
+.code-pre[data-mode="code-edit"],
+.code-post[data-mode="code-edit"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.code-pre {
+  left: -24px;
+  top: 0;
+}
+
+.code-post {
+  right: -100px;
+  top: 0;
+  letter-spacing: 2px;
+}
+
+
+
 
 footer {
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
@@ -176,6 +223,8 @@ footer {
 
 .share-button,
 .delete-button {
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 17px;
   position: absolute;
   right: 3px;
   top: -3px;
@@ -209,6 +258,8 @@ footer {
   top:3px;
 }
 .id-square {
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 9px;
   display: inline-block;
   background-color: rgb(218, 100, 100);
   color: white; 
@@ -313,10 +364,13 @@ textarea:focus,
 
 .chat-header,
 .comments-header {
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 1px;
   margin: 0 auto;
   text-align: center;
-  border-bottom: 1px dotted #ccc;
-  background-color: #f5f9fc;
+  border-bottom: 1px dotted var(--background-chat-comments-header);
+  background-color: var(--background-chat-comments-header);
   padding: 0.4rem;
 }
 
@@ -372,7 +426,7 @@ textarea:focus,
 .code-output-container {
   font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace; 
   position: absolute;
-  top: 210px;
+  top: 200px;
   right: 10px;
   width: 17%;
   min-height: 496px;
@@ -381,7 +435,7 @@ textarea:focus,
   transform: translateX(100%);
   opacity: 0;
   transition: opacity 0.44s ease, transform 0.44s ease;
-  background-color: #fff;
+  background-color: var(--background-code-output-container);
   overflow: auto;
   pointer-events: none;
 }
@@ -413,8 +467,9 @@ textarea:focus,
   margin: 0 auto;
   text-align: center;
   border-bottom: 1px dotted #ccc;
-  background-color: #eedbf7;
+  background-color: var(--background-code-output-header);
   font-size: 19px;
+  font-weight: 400;
 }
 
 
@@ -422,7 +477,9 @@ textarea:focus,
   display: flex;
   flex-direction: column;
   width: 100%;
-  font-size: 12px;
+  font-size: 14px;
+  padding: 0.2rem;
+  padding-top: 0.3rem;
   overflow-wrap: break-word;
   word-break: break-word;
 }
@@ -502,6 +559,23 @@ form {
   text-align: center;
   cursor: pointer;
   padding: 1rem;
+  transition: ease-in-out 0.3s;
+}
+
+.user-panel-placeholder {
+  min-width: 150px;
+  height: 50px;
+}
+
+.user-panel:hover {
+  filter: brightness(1.5);
+}
+
+.user-profile-header {
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 400;
+  letter-spacing: 2px;
+  border-bottom: 2px dotted rgb(201, 201, 208);
 }
 
 .logout-button {
@@ -552,6 +626,7 @@ might be some lagging styling that have to be adjusted later: */
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  font-size: 18px;
   padding: 0.4rem;
   margin-bottom: 1rem;
   max-height: 580px;
@@ -581,7 +656,7 @@ might be some lagging styling that have to be adjusted later: */
 
 .single-comment-container-comment {
   color: #1f2937;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .single-comment-container-text {
@@ -592,6 +667,16 @@ might be some lagging styling that have to be adjusted later: */
   color: #374151;
   font-style: italic;
   font-size: 0.7rem;
+}
+
+.single-comment-container-username {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.08rem 0.3rem;
+  border-radius: 2px;
+  color: rgb(249, 242, 242);
+  background: rgb(50, 74, 94);
 }
 
 /* .single-comment-container-id {
@@ -609,11 +694,11 @@ might be some lagging styling that have to be adjusted later: */
 }
 
 .comment-edit-input {
-  padding: 0.4rem;
+  padding: 0.2rem;
   width: 100%;
   border: none;
   outline: none;
-  font-size: 16px;
+  font-size: 13px;
   overflow-wrap: break-word;
   white-space: normal;
   word-break: break-word;
@@ -641,5 +726,80 @@ might be some lagging styling that have to be adjusted later: */
 }
 
 
+.single-comment-container-text {
+  display: inline-block;
+  max-width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#password,
+#email,
+#name {
+  font-size: 15px;
+}
+
+.run-code-button {
+  margin-top: 1rem;
+}
 
 
+
+/* Decent basic color-scheme-preferred-dependent, variable-based styling established.
+
+Ironically, the only thing that proved arduous and perplexingly convoluted, was setting the monaco-editor content
+box to a VSCode like dark-grey color. Maybe I'll return to it. */
+
+:root {
+  --background-header-view: #f5f9fc;
+
+  --color-header-text: rgb(49, 72, 92);
+
+  --background-header-code: #edd7f7;
+
+  --background-header-editor: #dae4ec;
+
+  --background-chat-comments-header: #dae4ec;
+
+  --background-code-output-header: #eedbf7;
+
+  --background-code-output-container: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-header-view: #636c75;
+
+    --color-header-text: #fbfdff;
+
+    --background-header-code: rgba(133, 103, 162, 0.415);
+
+    --background-header-editor: rgb(42, 74, 102);
+
+    --background-chat-comments-header: rgb(59, 59, 59);
+
+    --background-code-output-header: #574560;
+
+    --background-code-output-container: rgb(59, 59, 59);
+  }
+
+  ::selection {
+    background-color: #36324f;
+  }
+  .comment-quill {
+    background-color:#29345e;
+  }
+  .single-comment-container {
+    background-color: #52525684;
+  }
+  .single-comment-container-comment {
+    color: #fff;
+  }
+  .single-comment-container-text {
+    color: #fff;
+  }
+  .single-comment-container:hover {
+    background-color: #2a2a3084;
+  }
+}

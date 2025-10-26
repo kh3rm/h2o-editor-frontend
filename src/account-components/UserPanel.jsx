@@ -7,7 +7,9 @@ import { useDocumentContext } from '../document-components/DocumentContext';
 function UserPanel() {
     const { user, setMode } = useDocumentContext();
 
-    if (!user) return;
+    if (!user) {
+        return <div className="user-panel user-panel-placeholder"></div>;
+      }
 
     return (
         <div className="user-panel" onClick={() => setMode("profile")}>
@@ -15,7 +17,7 @@ function UserPanel() {
             {/* User icon */}
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="50" height="50" viewBox="0 0 24 24"
+                width="36" height="36" viewBox="0 0 24 24"
                 fill="currentColor" aria-hidden="true" focusable="false"
                 className="user-icon"
             >
