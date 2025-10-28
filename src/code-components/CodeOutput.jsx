@@ -8,7 +8,7 @@
 import React from "react";
 
 function CodeOutput({ output }) {
-  const hasOutput = !!output;
+  const hasOutput = output !== null && output !== undefined;
 
   return (
     <div className={`code-output-container ${hasOutput ? "active" : ""}`}>
