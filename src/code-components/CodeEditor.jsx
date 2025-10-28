@@ -30,7 +30,6 @@ function CodeEditor() {
     socketRef
   } = useDocumentContext();
 
-
   const socket = socketRef.current;
 
   // -----------------------------------------------------------------------------------------------
@@ -42,7 +41,7 @@ function CodeEditor() {
 
     // Load the existing code or fallback to a default welcome message when empty
     const initialLoadValue =
-      codeContent.code === null || codeContent.code === '' 
+      !codeContent || codeContent.code === null || codeContent.code === ''
         ? "// Welcome! This code document is empty. Enjoy the coding!"
         : codeContent.code;
     editor.setValue(initialLoadValue);
@@ -54,7 +53,7 @@ function CodeEditor() {
   //                               Local Content Change Emit
   // -----------------------------------------------------------------------------------------------
   const handleEditorChange = (newContent) => {
-    if (isRemoteChange.current || !currentCodeDocId) return;
+    if (isRemoteChange.current || !currentCodeDocId || !socket) return;
 
     // Emit content changes to other users in room
     socket.emit("update-code-content", {
@@ -71,14 +70,13 @@ function CodeEditor() {
     setCodeTitle(newTitle);
 
     // Emit local title change to other users
-    if (currentCodeDocId) {
+    if (currentCodeDocId && socket) {
       socket.emit("update-code-title", {
         id: currentCodeDocId,
         title: newTitle,
       });
     }
   };
-
 
   // -----------------------------------------------------------------------------------------------
   //                               Handle Remote Updates
@@ -87,13 +85,12 @@ function CodeEditor() {
   useEffect(() => {
     if (!socket || !currentCodeDocId) return;
 
-
     /**
      * Listen for incoming code content updates from other users. Uses a useRef isRemoteChange flag
      * to distinguish it from a local change and prevent an infine loop and unneccessary re-rendering.
      */
     socket.on("code-content-updated", ({ id, code }) => {
-      if (id !== currentCodeDocId || typeof code !== "string") return;
+      if (id !== currentCodeDocId || typeof code !== "string" || !socket) return;
 
       isRemoteChange.current = true;
       editorRef.current?.setValue(code);
@@ -106,22 +103,25 @@ function CodeEditor() {
      * Listen for remote title updates and update local state
      */
     socket.on("code-title-updated", ({ id, title }) => {
-      if (id !== currentCodeDocId || typeof title !== "string") return;
+      if (id !== currentCodeDocId || typeof title !== "string" || !socket) return;
       setCodeTitle(title);
     });
 
     socket.on("code-error", ({ error }) => {
+      if (!socket) return;
       console.error("Socket error:", error);
     });
 
     // Cleanup
     return () => {
-      socket.off("code-content-updated");
-      socket.off("code-title-updated");
-      socket.off("code-error");
+      if (socket) {
+        socket.off("code-content-updated");
+        socket.off("code-title-updated");
+        socket.off("code-error");
 
-      if (currentCodeDocId) {
-        socket.emit("leave-document-room", currentCodeDocId.current);
+        if (currentCodeDocId) {
+          socket.emit("leave-document-room", currentCodeDocId);
+        }
       }
     };
   }, [socket, currentCodeDocId]);
