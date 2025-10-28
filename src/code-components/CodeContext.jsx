@@ -32,7 +32,7 @@ export const CodeProvider = ({ children }) => {
   const isRemoteChange = useRef(false); // Flag to prevent emitting out remote socket updates in an endless loop
 
   // Some helpful assistance from DocumentContext
-  const { setMode, getAllDocuments, socketRef} = useDocumentContext();
+  const { setMode, socketRef, setChatMessages, getAllDocuments} = useDocumentContext();
 
   
 
@@ -55,7 +55,9 @@ export const CodeProvider = ({ children }) => {
       setCodeUpdateId(doc._id);
       setMode("code-edit");
       socketRef.current.emit("join-code-document-room", doc._id);
+
     } catch (err) {
+
       console.error("Load Code Document Error:", err);
     }
   };
@@ -69,6 +71,11 @@ export const CodeProvider = ({ children }) => {
     if (!monacoEditorRef.current) return;
 
     const codeToRun = monacoEditorRef.current.getValue();
+
+    if (!codeToRun) {
+      console.log('Empty code editor content = No code to execute')
+      return
+    }
 
     const data = {
       code: btoa(codeToRun)
@@ -108,7 +115,6 @@ export const CodeProvider = ({ children }) => {
       socketRef.current.emit("leave-code-document-room", currentCodeDocId);
     }
     resetStateCode();
-    getAllDocuments();
     setMode("view");
   };
 
@@ -118,6 +124,8 @@ export const CodeProvider = ({ children }) => {
     setCodeUpdateId(null);
     setCurrentCodeDocId(null);
     setCodeOutput(null);
+    setChatMessages([]);
+    getAllDocuments();
   };
 
   // -----------------------------------------------------------------------------------------------
