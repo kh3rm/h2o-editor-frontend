@@ -108,6 +108,7 @@ export const DocumentProvider = ({ children }) => {
         alert("You have to sign up before you can accept an invitation.");
         setMode("signup");
       },
+      "invite-document-not-found": () => alert("The document does not exist anymore."),
       "invite-link-expired": () => alert("The link has expired. You will have to be invited again."),
       "invite-error": () => alert("Sorry, could not accept invitation due to an unexpected error."),
     };
