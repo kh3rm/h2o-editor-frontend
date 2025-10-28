@@ -344,23 +344,6 @@ textarea:focus,
   z-index: 2;
 }
 
-.comments-container {
-  position: absolute;
-  top: 222px;
-  right: 10px;
-  width: 17%;
-  height: 550px;
-  border: 1px dotted #ccc;
-  border-radius: 4px;
-  opacity: 0;
-  transform: translateX(100%);
-  transition: opacity 0.44s ease, transform 0.44s ease;
-}
-
-.comments-container.visible {
-  opacity: 1;
-  transform: translateX(0);
-}
 
 .chat-header,
 .comments-header {
@@ -499,6 +482,7 @@ textarea:focus,
 
 
 .code-title-input {
+  font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace !important;
   width: 100%;
   margin-top: 1.4rem;
   margin-bottom: 0.4rem;
@@ -621,6 +605,25 @@ might be some lagging styling that have to be adjusted later: */
 }
 
 
+.comments-container {
+  position: absolute;
+  top: 222px;
+  right: 10px;
+  width: 17%;
+  height: 634px;
+  border: 1px dotted #ccc;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 0.44s ease, transform 0.44s ease;
+}
+
+.comments-container.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+
 
 .comments-inner-container {
   display: flex;
@@ -629,34 +632,39 @@ might be some lagging styling that have to be adjusted later: */
   font-size: 18px;
   padding: 0.4rem;
   margin-bottom: 1rem;
-  max-height: 580px;
+  height: calc(100% - 50px);
   overflow-y: auto;
-  overflow-x: hidden;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
 .single-comment-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background-color: #fff;
-  padding: 2.2rem 0.8rem;
-  padding-bottom: 2rem;
-  min-height: 5rem;
+  padding: 2.2rem 0.8rem 3rem 0.8rem;
+  min-height: 5.5rem;
   font-size: 13px;
   border: 1px solid #eee;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color scale 1.4s ease-in-out;
+  transition: background-color 0.24s ease-in-out, transform 0.24s ease-in-out;
+  overflow: visible;
+  overflow-wrap: break-word;
+  flex-shrink: 0;
 }
 
 .single-comment-container:hover {
   background-color: #e2eceb;
-  transform: scale(1.02);
 }
 
 .single-comment-container-comment {
   color: #1f2937;
   font-size: 0.9rem;
+  white-space: normal;
+  overflow-wrap: break-word;
+  display: block;
+  min-height: 1.5rem;
+  line-height: 1.4;
 }
 
 .single-comment-container-text {
@@ -702,7 +710,7 @@ might be some lagging styling that have to be adjusted later: */
   overflow-wrap: break-word;
   white-space: normal;
   word-break: break-word;
-  display: "block";
+  display: block;
   background-color: transparent;
   color:#1f2937;
 }
@@ -729,8 +737,9 @@ might be some lagging styling that have to be adjusted later: */
 .single-comment-container-text {
   display: inline-block;
   max-width: 80%;
+  margin-top: 2rem;
   white-space: nowrap;
-  overflow: hidden;
+  overflow-x: hidden;
   text-overflow: ellipsis;
 }
 
@@ -802,4 +811,8 @@ box to a VSCode like dark-grey color. Maybe I'll return to it. */
   .single-comment-container:hover {
     background-color: #2a2a3084;
   }
+  .comment-edit-input {
+    color: #fff;
+  }
+  
 }
