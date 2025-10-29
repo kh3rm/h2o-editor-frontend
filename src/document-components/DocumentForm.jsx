@@ -175,7 +175,7 @@ function DocumentForm() {
       quill.setContents({ ops: [] });
       setComments({});
     }
-
+  
 
   // -----------------------------------------------------------------------------------------
   //                    Selection Handling
@@ -493,6 +493,31 @@ function DocumentForm() {
     const updatedComments = retrieveAllComments(quill.getContents());
     setComments(updatedComments);
   };
+
+
+
+
+
+  // -----------------------------------------------------------------------------------------
+  //                    Provide Cypress Access To Comment Blot Functions
+  // -----------------------------------------------------------------------------------------
+
+  useEffect(() => {
+      window.__H2O_EDITOR_TEST_API__ = {
+        commentBlotCreate,
+        commentBlotEdit,
+        commentBlotDelete,
+        getQuill: () => quillEditorRef.current,
+      };
+    return () => {
+      // Clean up to prevent stale refs
+      if (window.__H2O_EDITOR_TEST_API__) {
+        delete window.__H2O_EDITOR_TEST_API__;
+      }
+    };
+  }, []);
+
+
 
 
   // -----------------------------------------------------------------------------------------
