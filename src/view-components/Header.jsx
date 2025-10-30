@@ -20,6 +20,9 @@ function Header() {
           <span className="code-pre code-symbol" data-mode={mode}>{"<"}</span>
           <span className="title-text">docpool</span>
           <span className="code-post code-symbol" data-mode={mode}>{"⁄>"}</span>
+          {/* Regular slash in this font was too big and unwieldy, and did not give a code-like feel, so instead of
+          trying to manipulate size or choose a different font for just the slash to get it right, this alternative
+          fractional slash-symbol was chosen, which turned out good. */}
         </h1>
       </div>
       <UserPanel />
