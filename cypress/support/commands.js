@@ -1,51 +1,44 @@
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+import 'cypress-wait-until';
 
+  // -----------------------------------------------------------------------------------------------
+  //                              Helper Custom Commands
+  // -----------------------------------------------------------------------------------------------
 
+// Login
+Cypress.Commands.add('login', () => {
+  cy.request('POST', 'http://localhost:3000/account/login', {
+    email: 'hekr23@student.bth.se',
+    password: '12345Qwerty!'
+  }).then((response) => {
+    const token = response.body.data?.token;
+    expect(token, 'Login token').to.be.a('string');
 
-Cypress.Commands.add('renderHeaderFooter', () => {
-    // Header / Footer should render and persist as is throughout, hence the use of
-    // this custom command for easy inclusion.
-    console.log('HeaderFooter-render-console-log')
-
-    // ___________________________________________________________________________________________
-    
-    // Ascertain that the <header>-element exists
-    cy.get('header').should('exist');
-
-    // Ascertain that the <header>-element contains a <h1> with 'H(2)O Document Editor'
-    cy.get('header h1')
-      .should('exist')
-      .and('contain.text', 'H(2)O Document Editor');
-
-    // Ascertain that the <footer>-element exists
-    cy.get('footer').should('exist');
-
-    // Ascertain that the <footer> contains a <p>-element with 'H(2)O Document Editor'
-    cy.get('footer p')
-      .should('exist')
-      .and('contain.text', 'H(2)O Document Editor');;
+    cy.visit('http://localhost:5173/h2o-editor-frontend', {
+      onBeforeLoad(win) {
+        win.sessionStorage.setItem('token', token);
+      },
+    });
   });
+});
+
+// Confirms rendering of Header
+Cypress.Commands.add('renderHeader', () => {
+  cy.get('header').should('exist');
+  cy.get('header h1')
+    .should('exist')
+    .and('contain.text', 'docpool');
+});
+
+// Elementary wait-function
+Cypress.Commands.add('waitHalfSecond', () => {
+  cy.wait(500);
+});
+
+// Provides a visual “slow typing”-effect in the DOM for readability and aesthetic purposes
+Cypress.Commands.add('typeSlow', { prevSubject: 'element' }, (subject, text, options = {}) => {
+  const delay = options.delay ?? 20;
+  for (const char of text) {
+    cy.wrap(subject).type(char, { delay });
+  }
+  return cy.wrap(subject);
+});

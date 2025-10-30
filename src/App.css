@@ -2,6 +2,11 @@
   box-sizing: border-box;
 }
 
+header, footer, button, input, textarea {
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 400 !important;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -10,8 +15,13 @@ body {
 }
 
 main {
-  min-height: 80vh;
-  max-width: 50%;
+  min-height: 90vh;
+  width: 100vw;
+}
+
+
+.main-content {
+  max-width: 58%;
   margin: 3rem auto;
   font-size: 1.3em;
 }
@@ -52,6 +62,21 @@ textarea {
   margin-bottom: 0.4rem;
 }
 
+.top-button-container {
+  display: inline-flex;
+  gap: 3rem;
+}
+
+.code-button {
+  font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace;
+  font-size: 15px;
+  background-color:#574560;
+}
+
+.code-button:hover {
+  background: linear-gradient(90deg, rgb(97, 78, 109) 0%, #574560 100%);
+}
+
 .document-buttons-container {
   display: flex;
   flex-wrap: wrap;
@@ -60,18 +85,24 @@ textarea {
   gap: 10px;
 }
 
+
 button {
   font-size: 17px;
-  padding: 0.5em 2em;
+  padding: 0.9em 2.2em;
   border: transparent;
   box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
-  background: rgb(32, 140, 249);
+  background: rgb(50, 74, 94);
   color: white;
   border-radius: 4px;
 }
 
+.document-button {
+  min-width: 13rem;
+  min-height: 4.4rem;
+}
+
 button:hover {
-  background: linear-gradient(90deg, rgba(30, 144, 255, 1) 0%, rgba(0, 212, 255, 1) 100%);
+  background: linear-gradient(90deg, rgb(50, 74, 94) 0%, rgb(58, 100, 134) 100%);
 }
 button:focus {
   outline: 1px solid rgb(201, 201, 208);
@@ -79,28 +110,95 @@ button:focus {
 
 .saved-documents {
   width: 100%;
-  max-width: 900px;
+  max-width: 1000px;
   padding: 0.4rem 1.8rem;
-  border: 2px dashed rgb(105, 105, 189);
+  border: 2px dotted rgb(201, 201, 208);
+  /* border: 2px dashed rgb(50, 74, 94); */
   margin: 2rem 0;
   border-radius: 4px;
 }
 
 .saved-documents-h2 {
-  margin: 0rem 0.4rem;
-  padding: 0.4rem 0;
+  
+  margin: 0.4rem 0.4rem;
+  padding: 0.8rem 0.4rem;
+  border-bottom: 2px dotted rgb(201, 201, 208);
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 400 !important;
+  letter-spacing: 2px;
 }
 
 header {
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  font-size: 20px;
   display: flex;
   width: 100vw;
-  height: 140px;
-  background-color: #f5f9fc;
-  justify-content: center;
+  height: 85px;
+  background-color: var(--background-header-view);
+  color: var(--color-header-text);
+  justify-content: space-evenly;
   align-items: center;
+  transition: background-color 0.62s ease-in-out;
 }
+
+.header.code-edit {
+  background-color: var(--background-header-code);
+}
+
+.header.update {
+  background-color: var(--background-header-editor);
+}
+
+.header:not(.code-edit):not(.update) {
+  background-color: var(--background-header-view);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+}
+
+.header-title {
+  position: relative;
+  display: inline-block;
+  width: 100px;
+  margin-left: 2rem;
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 400 !important;
+  font-size: 44px;
+  font-display: swap;
+  text-align: center;
+}
+
+.title-text {
+  display: inline-block;
+}
+
+.code-symbol {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(-48px);
+  transition: opacity 0.33s ease-in-out, transform 0.39s ease-out;
+}
+
+.code-pre[data-mode="code-edit"],
+.code-post[data-mode="code-edit"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.code-pre {
+  left: -24px;
+  top: 0;
+}
+
+.code-post {
+  right: -100px;
+  top: 0;
+  letter-spacing: 2px;
+}
+
+
+
 
 footer {
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
@@ -123,10 +221,13 @@ footer {
   padding-right: 50px;
 }
 
+.share-button,
 .delete-button {
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 17px;
   position: absolute;
-  right: 4px;
-  top: 3px;
+  right: 3px;
+  top: -3px;
   cursor: pointer;
   background: transparent;
   border: none;
@@ -134,10 +235,584 @@ footer {
   transition: transform 0.2s ease;
 }
 
+.share-button {
+  top: unset;
+  bottom: -3px;;
+}
+
+/* .id-button {
+  font-size: 8px;
+  position: absolute;
+  left: 4px;
+  bottom: 3px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  line-height: 1;
+  letter-spacing: -5px;
+} */
+
+.id-button {
+  font-size: 8px;
+  position: absolute;
+  left: 3px;
+  top:3px;
+}
+.id-square {
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 9px;
+  display: inline-block;
+  background-color: rgb(218, 100, 100);
+  color: white; 
+  padding: 0 0.3rem;   
+  width: auto;
+  height: auto;
+  text-align: center;         
+  vertical-align: middle;   
+  border-radius: 3px;   
+}
+
+.doc-symbol {
+  display: none;
+  position: relative;
+  left: -5px;
+  top:15px;
+}
+
+.share-button:hover,
 .delete-button:hover {
   transform: scale(1.1);
 }
 
 .toggle-button {
   margin-top: 2rem;
+}
+
+
+input[type="text"],
+textarea {
+  font-family: inherit;
+  font-size: 16px;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+.ql-editor.ql-snow:focus {
+  border: auto;
+  outline: none;
+}
+
+
+.document-editor-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+
+.chat-button {
+  position: absolute;
+  top: 153px;
+  left: 22px;
+  padding: 0.3rem 2rem;
+  z-index: 2;
+}
+
+
+.chat-container {
+  position: absolute;
+  top: 222px;
+  left: 20px;
+  width: 17%;
+  height: 550px;
+  border: 1px dotted #ccc;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity 0.44s ease, transform 0.44s ease;
+}
+
+.chat-container.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.comments-button {
+  position: absolute;
+  top: 153px;
+  right: 14px;
+  padding: 0.3rem 2rem;
+  z-index: 2;
+}
+
+
+.chat-header,
+.comments-header {
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  margin: 0 auto;
+  text-align: center;
+  border-bottom: 1px dotted var(--background-chat-comments-header);
+  background-color: var(--background-chat-comments-header);
+  padding: 0.4rem;
+}
+
+/* .comments-header {
+  background-color: #6baadb;
+} */
+
+.chat-inner-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.chat-form {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 44px;
+  display: flex;
+  box-sizing: border-box;
+}
+
+.chat-input {
+  width: 70%;
+  height: 36px;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.chat-input-button {
+  position: relative;
+  width: 25%;
+  height: 36px;
+  font-size: 14px;
+  margin-left: 2.5%;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.send-svg {
+  position: absolute;
+  top: 22%;
+  left: 35%;
+}
+
+/* Code Output Container */
+
+.code-output-container {
+  font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace; 
+  position: absolute;
+  top: 200px;
+  right: 10px;
+  width: 17%;
+  min-height: 496px;
+  border: 1px dotted #ccc;
+  border-radius: 4px;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: opacity 0.44s ease, transform 0.44s ease;
+  background-color: var(--background-code-output-container);
+  overflow: auto;
+  pointer-events: none;
+}
+
+.code-output-inner-container p {
+  font-size: 14px;
+  font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace;
+}
+
+
+.code-output-inner-container {
+  padding: 0.1rem 0.4rem;
+  overflow-x: hidden;
+  display: block;
+  flex-wrap: wrap;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: hidden;
+}
+
+
+.code-output-container.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.code-output-header {
+  margin: 0 auto;
+  text-align: center;
+  border-bottom: 1px dotted #ccc;
+  background-color: var(--background-code-output-header);
+  font-size: 19px;
+  font-weight: 400;
+}
+
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-size: 14px;
+  padding: 0.2rem;
+  padding-top: 0.3rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.quill-editor-container {
+  height: 575px;
+  padding-bottom: 3rem;
+}
+
+.document-title-input {
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  padding: 0.65rem;
+  margin-top: 2rem;
+}
+
+
+.code-title-input {
+  font-family: 'Menlo', 'Lucida Console', 'DejaVu Sans Mono', monospace !important;
+  width: 100%;
+  margin-top: 1.4rem;
+  margin-bottom: 0.4rem;
+  padding: 0.6rem;
+  border: solid 1px #eedbf7;
+  border-radius: 4px;
+}
+
+.code-editor-container {
+  width: 100%;
+  margin-top: 1.4rem;
+  padding: 0.6rem;
+  border: solid 1px #eedbf7;
+  width: "100%",
+}
+
+form {
+  max-width: 500px;
+}
+
+/* TOGGLE SHOW-HIDE PASSWORD */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.password-wrapper .toggle-visibility {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.7rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #666;
+}
+
+.link {
+  color: rgb(32, 140, 249);
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.user-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  padding: 1rem;
+  transition: ease-in-out 0.3s;
+}
+
+.user-panel-placeholder {
+  min-width: 150px;
+  height: 50px;
+}
+
+.user-panel:hover {
+  filter: brightness(1.5);
+}
+
+.user-profile-header {
+  font-family: 'Saira', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 400;
+  letter-spacing: 2px;
+  border-bottom: 2px dotted rgb(201, 201, 208);
+}
+
+.logout-button {
+  margin-top: 1rem;
+}
+
+.red-delete-button {
+  margin-top: 1rem;
+  background: rgb(220, 53, 69); /* basröd */
+  color: white;
+}
+
+.red-delete-button:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(200, 35, 51, 1) 0%,
+    rgba(255, 80, 100, 1) 100%
+  );
+
+}
+
+
+
+/* Adding main bulk-changes from dev App.css here at the bottom, I have more mixed into the stylesheet that I have not parsed out yet,
+might be some lagging styling that have to be adjusted later: */
+
+
+
+.comment-quill {
+  background-color: #e2eceb;
+  padding: 0.3rem 0rem;
+  cursor: pointer;
+}
+
+.comment-textarea {
+  height: 100px;
+}
+
+
+.add-comment-button {
+  padding: 0.2rem;
+  opacity: 0.8;
+}
+
+
+.comments-container {
+  position: absolute;
+  top: 222px;
+  right: 10px;
+  width: 17%;
+  height: 634px;
+  border: 1px dotted #ccc;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 0.44s ease, transform 0.44s ease;
+}
+
+.comments-container.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+
+
+.comments-inner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-size: 18px;
+  padding: 0.4rem;
+  margin-bottom: 1rem;
+  height: calc(100% - 50px);
+  overflow-y: auto;
+}
+
+.single-comment-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  padding: 2.2rem 0.8rem 3rem 0.8rem;
+  min-height: 5.5rem;
+  font-size: 13px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.24s ease-in-out, transform 0.24s ease-in-out;
+  overflow: visible;
+  overflow-wrap: break-word;
+  flex-shrink: 0;
+}
+
+.single-comment-container:hover {
+  background-color: #e2eceb;
+}
+
+.single-comment-container-comment {
+  color: #1f2937;
+  font-size: 0.9rem;
+  white-space: normal;
+  overflow-wrap: break-word;
+  display: block;
+  min-height: 1.5rem;
+  line-height: 1.4;
+}
+
+.single-comment-container-text {
+  display: inline-block;
+  position: absolute;
+  bottom: 5px;
+  left: 4px;
+  color: #374151;
+  font-style: italic;
+  font-size: 0.7rem;
+}
+
+.single-comment-container-username {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.08rem 0.3rem;
+  border-radius: 2px;
+  color: rgb(249, 242, 242);
+  background: rgb(50, 74, 94);
+}
+
+/* .single-comment-container-id {
+  position: absolute;
+  top: 1px;
+  left: 65%;
+  color: #758092;
+  font-style: italic;
+  font-size: 0.6rem;
+} */
+
+
+.active-comment {
+  background-color: #e2eceb;
+}
+
+.comment-edit-input {
+  padding: 0.2rem;
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  overflow-wrap: break-word;
+  white-space: normal;
+  word-break: break-word;
+  display: block;
+  background-color: transparent;
+  color:#1f2937;
+}
+
+.comment-edit-input-button {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  padding: 0.1rem 0.3rem;
+  font-size: 12px;
+}
+
+
+.single-comment-delete {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  padding: 0.1rem 0.3rem;
+  font-size: 12px;
+  color: rgb(255, 163, 163);
+}
+
+
+.single-comment-container-text {
+  display: inline-block;
+  max-width: 80%;
+  margin-top: 2rem;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+#password,
+#email,
+#name {
+  font-size: 15px;
+}
+
+.run-code-button {
+  margin-top: 1rem;
+}
+
+
+
+/* Decent basic color-scheme-preferred-dependent, variable-based styling established.
+
+Ironically, the only thing that proved arduous and perplexingly convoluted, was setting the monaco-editor content
+box to a VSCode like dark-grey color. Maybe I'll return to it. */
+
+:root {
+  --background-header-view: #f5f9fc;
+
+  --color-header-text: rgb(49, 72, 92);
+
+  --background-header-code: #edd7f7;
+
+  --background-header-editor: #dae4ec;
+
+  --background-chat-comments-header: #dae4ec;
+
+  --background-code-output-header: #eedbf7;
+
+  --background-code-output-container: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-header-view: #636c75;
+
+    --color-header-text: #fbfdff;
+
+    --background-header-code: rgba(133, 103, 162, 0.415);
+
+    --background-header-editor: rgb(42, 74, 102);
+
+    --background-chat-comments-header: rgb(59, 59, 59);
+
+    --background-code-output-header: #574560;
+
+    --background-code-output-container: rgb(59, 59, 59);
+  }
+
+  ::selection {
+    background-color: #36324f;
+  }
+  .comment-quill {
+    background-color:#29345e;
+  }
+  .single-comment-container {
+    background-color: #52525684;
+  }
+  .single-comment-container-comment {
+    color: #fff;
+  }
+  .single-comment-container-text {
+    color: #fff;
+  }
+  .single-comment-container:hover {
+    background-color: #2a2a3084;
+  }
+  .comment-edit-input {
+    color: #fff;
+  }
+  
 }

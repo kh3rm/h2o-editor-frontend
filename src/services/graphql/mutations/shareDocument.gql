@@ -1,0 +1,9 @@
+mutation shareDoc(
+    $docId: ID!
+    $email: String!    
+) {
+    shareDocument(
+        docId: $docId
+        email: $email   
+    )
+}

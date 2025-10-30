@@ -1,0 +1,11 @@
+mutation CreateDoc(
+    $title: String!
+    $content: JSON!
+    $code: Boolean!
+) {
+    createDocument(
+        title: $title
+        content: $content
+        code: $code 
+    )
+}

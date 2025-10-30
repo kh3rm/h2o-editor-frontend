@@ -1,9 +1,24 @@
-/* istanbul ignore file */
+// DocumentContext.js
 
 /**
  * This DocumentContext-setup enables easy and consistent access to all the
- * relevant state-variables and functions for the Document Components,
- * cleaning up the code considerably, drastically reducing the need to feed them props.
+ * relevant state-variables, socket-connections, and synced edit-functions
+ * for the Document Components.
+ *
+ * This re-revised version replaces the original traditional fetch-based REST-API CRUD-logic
+ * (that fleetingly made an appearance as an experimental fully socket-based implementation),
+ * to a now more sound hybrid-approach, where the newly established GraphQL-structure provides a 
+ * single endpoint that enables the Type-checked and smooth Creation (C), Reading/loading (R), and
+ * Deletion (D) of documents in the DB.
+ * 
+ * Socket keeps responsibility of the one area where it really shines: Updating (U), and
+ * room-handling, in a dynamic, real-time collaborative manner, in JoinEditDocument(), with complementing
+ * socket-related logic on the backend.
+ * 
+ * The Quill-editor structured content is now dynamically updated with every keystroke/selection change
+ * via deltas, working against a last updated version in cache on the backend, which is persisted and
+ * sent to the db after either: 1.2 seconds of user inactivity, 15 seconds general autosave, 10 new deltas,
+ * socket(user) room exit or disconnect.
  *
  * The main parent <DocumentEditor> is enclosed:
  *
@@ -14,249 +29,338 @@
  * ...thus in Main, enabling its use, and the exported custom hook useDocumentContext()
  * provides easy access to the document-context-object in the Document Component-modules,
  * where one can simply destructure it and pick out what one needs...
- *
-*/
+ */
 
-import React from 'react';
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
+import usersService from "../services/users";
+import documentsService from "../services/documents";
+import auth from "../services/auth";
 
-const DocumentContext = createContext();
+export const DocumentContext = createContext();
 
 export const DocumentProvider = ({ children }) => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const socketRef = useRef(null);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(auth.isLoggedIn());
+
+  const [user, setUser] = useState(null);
+
   const [documents, setDocuments] = useState([]);
+  const [currentDocId, setCurrentDocId] = useState(null);
+
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  const [clientId, setClientId] = useState(null);
+
   const [updateId, setUpdateId] = useState(null);
-  const [mode, setMode] = useState('view');
+  const [mode, setMode] = useState("");
 
-  const H2O_EXPRESS_API_URI = 'https://h2o-editor-oljn22.azurewebsites.net/documents';
+  const currentDocIdRef = useRef(null);
 
-  // Fetches the documents once on initiation
+  const clientIdRef = useRef(null);
+
+  // Chat/Comments
+
+  const [chatDisplayed, setChatDisplayed] = useState(false);
+  const [commentsDisplayed, setCommentsDisplayed] = useState(false);
+
+  const [chatMessages, setChatMessages] = useState([]);
+
+  const [chatInputValue, setChatInputValue] = useState("");
+
+  // Keeps the ref always in sync with the current document ID (used in throttled emits)
+
   useEffect(() => {
-      getAllDocuments();
-  }, []);
+    currentDocIdRef.current = currentDocId;
+  }, [currentDocId]);
+
+  // // Keeps the ref always in sync with the current client ID
+  useEffect(() => {
+    if (clientIdRef) {
+      clientIdRef.current = clientId;
+    }
+  }, [clientId]);
+
+  // Switch between mode = "login" || "view" depending on isLoggedIn
+  useEffect(() => {
+    if (isLoggedIn) {
+      switchToViewMode();
+    } else {
+      resetState();
+      setMode("login");
+    }
+  }, [isLoggedIn]);
+
+  // Show message from backend redirect after user clicked a link
+  useEffect(() => {
+    // Get search param 'message' (ex. ?message=invite-success)
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
+    if (!message) return;
+
+    // Actions for messages
+    const messageActions = {
+      "signup": () => setMode("signup"),
+      "invite-success": () => alert("Invitation accepted!"),
+      "invite-user-not-found": () => {
+        alert("You have to sign up before you can accept an invitation.");
+        setMode("signup");
+      },
+      "invite-document-not-found": () => alert("The document does not exist anymore."),
+      "invite-link-expired": () => alert("The link has expired. You will have to be invited again."),
+      "invite-error": () => alert("Sorry, could not accept invitation due to an unexpected error."),
+    };
+
+    // Do action depending on message
+    if (messageActions[message]) {
+      messageActions[message]();
+    }
+
+    // Clean up search params
+    window.history.replaceState({}, "", window.location.pathname);
+}, []);
+
+
+// -----------------------------------------------------------------------------------------------
+//                                        GRAPHQL CRD
+// -----------------------------------------------------------------------------------------------
 
   /**
-   * Fetches all the documents from the backend and populates the documents state.
+   * Get authenticated user with documents
+   */
+  const getUserData = async () => {
+    const userData = await usersService.getUserData();
+
+    if (userData) {
+      const { documents, ...usr } = userData;
+
+      setUser(usr);
+      setDocuments(documents);
+    }
+  }
+
+
+  /**
+   * Fetch documents via graphQL endpoint, and populate documents state
    * 
    * @async
-   * @throws                    Error if the fetch-operation fails
+   * @throws                  Fetch- or graphQL errors
    * @returns {Promise<void>}
    */
   const getAllDocuments = async () => {
-      try {
-          const res = await fetch(H2O_EXPRESS_API_URI);
-          if (!res.ok) throw new Error('Sorry, could not retrieve the documents.');
-          const data = await res.json();
-          setDocuments(data);
-      } catch (err) {
-          console.error('Fetch error:', err);
-      }
+    const docs = await documentsService.getAll();
+    setDocuments(docs);
   };
 
-  /**
-   * Create a new document with the current state title and content (i.e: the filled out forms)
+
+/**
+   * Create a new default 'Untitled' document, with a Quill-based empty delta-object for
+   * the empty initialized content.
    * 
    * @async
    * @throws                    Error if the create-operation fails
    * @returns {Promise<void>}
    */
-  const createDocument = async () => {
-      if (!title.trim() || !content.trim()) {
-          alert("Neither the Title nor Content fields can be empty.");
-          return;
-      }
+    const createDocument = async () => {
+      await documentsService.create();
+      getAllDocuments();
+    };
 
-      const newDoc = { title, content };
 
-      try {
-          const res = await fetch(`${H2O_EXPRESS_API_URI}/create`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(newDoc),
-          });
-
-          if (!res.ok) throw new Error('Failed to create document');
-
-          const savedDoc = await res.json();
-
-          console.log("Created document", savedDoc);
-
-          switchToViewMode();
-      } catch (err) {
-          console.error('Create error:', err);
-      }
-  };
-
-  /**
-   * Update an existing document based on the state updateId, title and content
-   * (i.e: the filled out forms and the chosen document's id (updateId))
-   * 
-   * @async
-   * @throws                    Error if update-operation fails
-   * @returns {Promise<void>}
-   */
-  const updateDocument = async () => {
-      if (!updateId) return;
-
-      if (!title.trim() || !content.trim()) {
-        alert("Neither the Title nor Content fields can be empty.");
-        return;
-      }
-
-      const updatedDocument = {
-          id: updateId,
-          title,
-          content,
-      };
-
-      try {
-          const res = await fetch(`${H2O_EXPRESS_API_URI}/update`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(updatedDocument),
-          });
-
-          if (!res.ok) throw new Error(`Failed to update the document with the id ${updateId}`);
-
-          switchToViewMode();
-
-      } catch (err) {
-          console.error('Update error:', err);
-      }
-  };
-
-  /**
-   * Delete a document based on its id after user confirmation.
-   * 
-   * Uses the documents state to showcase the document title for confirmation purposes 
-   * before sending the delete request to the backend.
-   * 
-   * Might be handled more ideally in the future (implementing a web-socket-solution).
-   * 
-   * @async
-   * @param {string} deleteId    The document-id
-   * @throws                     Error if the delete-operation fails
-   * @returns {Promise<void>}
-   */
-  const deleteDocument = async (deleteId) => {
-      const documentToDelete = documents.data.find(doc => doc._id === deleteId);
-
-      const isConfirmed = window.confirm(
-          `Are you sure that you want to delete the document titled "${documentToDelete.title}"?`
-      );
-
-      if (isConfirmed) {
-          try {
-              const res = await fetch(`${H2O_EXPRESS_API_URI}/delete`, {
-                  method: 'DELETE',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ id: deleteId }),
-              });
-
-              if (!res.ok) throw new Error('Failed to delete the requested document');
-
-              console.log('Deleted document-id:', deleteId);
-              switchToViewMode();
-          } catch (err) {
-              console.error('Delete error:', err);
-          }
-      }
-  };
-
-  /**
-   * Load a document based on its id and populate the state title and content.
-   * 
-   * It makes sure to retrieve the latest version from the backend rather than relying on 
-   * the local documents state.
-   * 
-   * Handling could be improved with eventual web-socket-implementation in the project.
-   * 
-   * @async
-   * @param {string} id         Document ID
-   * @throws                     Error if the retrieval fails
-   * @returns {Promise<void>}
-   */
-  const loadDocument = async (id) => {
-      try {
-          const res = await fetch(`${H2O_EXPRESS_API_URI}/${id}`);
-          if (!res.ok) throw new Error(`Failed to fetch the document with the id: ${id}`);
-
-          const selectedDocument = await res.json();
-
-          setTitle(selectedDocument.data.title);
-          setContent(selectedDocument.data.content);
-          setUpdateId(id);
-          setMode('update');
-      } catch (err) {
-          console.error('Load Document Error:', err);
-      }
-  };
-
-  /**
-   * Resets the document-related state.
-   * 
-   * Clears title and content state, nullifies the updateId, and fetches and updates the
-   * documents-state from backend, to keep the documents fresh and up to date.
-   */
-  const resetState = () => {
-      setTitle('');
-      setContent('');
-      setUpdateId(null);
+    /**
+     * Create a new default 'Untitled' code-module, with code: true and with empty
+     * { content: ""}.
+     * 
+     * @async
+     * @throws                    Error if the create-operation fails
+     * @returns {Promise<void>}
+     */
+    const createCodeModule = async () => {
+      await documentsService.create(true);  // code = true
       getAllDocuments();
   };
 
-  /**
-   * Resets state and sets mode to 'create'.
-   */
-  const switchToCreateMode = () => {
-      resetState();
-      setMode('create');
-  };
+
 
   /**
-   * Resets state and sets mode to the default 'view'.
-   */
-  const switchToViewMode = () => {
-      resetState();
-      setMode('view');
+     * Delete a document based on its id after user confirmation.
+     * 
+     * @async
+     * @throws                     Error if the delete-operation fails
+     * @returns {Promise<void>}
+     */
+  const deleteDocument = async (doc) => {
+    if (confirm(`Are you sure you want to delete the document titled "${doc.title}"with _id "...${doc._id.slice(-5)}"?`)) {
+      await documentsService.delete(doc._id);
+
+      //...clear state and return to view-mode if the deleted doc was open
+      if (doc._id === currentDocIdRef.current) {
+        switchToViewMode();
+      } else {
+        await getAllDocuments();
+      }
+    }
   };
 
-  // Log all the mode-changes (dev)
+
+
+  const shareDocument = async (docId) => {
+    const email = prompt("Share this document, by entering an '@student.bth.se' address.");
+    if (email) {
+      await documentsService.share(docId, email);
+    }
+  }
+
+// -----------------------------------------------------------------------------------------------
+//                                NON-GRAPHQL SOCKET-RELATED JOIN-EDIT-DOCUMENT
+// -----------------------------------------------------------------------------------------------
+
+    /**
+     * Join a document-edit (update) session based on its id and populate the state title and content.
+     * 
+     * It makes sure to retrieve the latest version from the backend rather than relying on 
+     * the local documents state.
+     * 
+     * 
+     * @async
+     * @param {string} id         Document ID
+     * @throws                     Error if the retrieval fails
+     * @returns {Promise<void>}
+     */
+    const joinEditDocument = async (id) => {
+      try {
+        const doc = await documentsService.getOne(id);
+  
+        setCurrentDocId(doc._id);
+        setTitle(doc.title || "");
+        setContent(doc.content || "");
+        setUpdateId(doc._id);
+        setMode("update");
+  
+        socketRef.current.emit("join-document-room", doc._id, user.name);
+      } catch (err) {
+        console.error("Load Document Error:", err);
+      }
+    };
+
+
+
+// -----------------------------------------------------------------------------------------------
+//                                        SOCKET
+// -----------------------------------------------------------------------------------------------
+
   useEffect(() => {
-      console.log(mode);
-  }, [mode]);
+    if (!isLoggedIn) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      return;
+    }
+
+    const socket = io(import.meta.env.VITE_SOCKET_ENDPOINT, { auth: { token: auth.getToken() } });
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      clientIdRef.current = socket.id;
+      setClientId(socket.id);
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    }
+  }, [isLoggedIn]);
+
+// -----------------------------------------------------------------------------------------------
+//                                        VIEW/RESET
+// -----------------------------------------------------------------------------------------------
+
+
+  const switchToViewMode = () => {
+    resetState();
+    getUserData();
+    setMode("view");
+  };
+
+
+
+  const resetState = () => {
+    setDocuments(null);
+    setTitle("");
+    setContent("");
+    setUpdateId(null);
+    setChatMessages([]);
+    setChatDisplayed(false);
+    setCommentsDisplayed(false);
+  };
+
+// -----------------------------------------------------------------------------------------------
+//                                        RETURN & CUSTOM HOOK
+// -----------------------------------------------------------------------------------------------
+
 
   return (
-      <DocumentContext.Provider
-          value={{
-              title,
-              setTitle,
-              content,
-              setContent,
-              createDocument,
-              updateDocument,
-              updateId,
-              deleteDocument,
-              loadDocument,
-              documents,
-              mode,
-              switchToCreateMode,
-              switchToViewMode,
-          }}>
-          {children}
-      </DocumentContext.Provider>
+    <DocumentContext.Provider
+      value={{
+        isLoggedIn,
+        setIsLoggedIn,
+        user,
+        setUser,
+        documents,
+        setDocuments,
+        currentDocId,
+        setCurrentDocId,
+        title,
+        setTitle,
+        content,
+        setContent,
+        mode,
+        setMode,
+        updateId,
+        setUpdateId,
+        socketRef,
+        currentDocIdRef,
+        createDocument,
+        createCodeModule,
+        deleteDocument,
+        shareDocument,
+        joinEditDocument,
+        getAllDocuments,
+        switchToViewMode,
+        resetState,
+        clientId,
+        setClientId,
+        chatDisplayed,
+        setChatDisplayed,
+        commentsDisplayed,
+        setCommentsDisplayed,
+        chatMessages,
+        setChatMessages,
+        clientIdRef,
+        chatInputValue,
+        setChatInputValue
+      }}
+    >
+      {children}
+    </DocumentContext.Provider>
   );
 };
 
 /**
-* Created custom React-hook for accessing the DocumentContext.
-* 
-* Provides convenient access to the full document-related context state
-* and all the functions.
-* 
-* @returns {object}  Document context value
-*/
+ * Created custom React-hook for accessing the DocumentContext.
+ * 
+ * Provides convenient access to the full document-related context state
+ * and all the functions.
+ * 
+ * @returns {object}  Document context value
+ */
+
 export const useDocumentContext = () => {
   return useContext(DocumentContext);
 };

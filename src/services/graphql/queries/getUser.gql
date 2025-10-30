@@ -1,0 +1,12 @@
+query GetUser {
+    user {
+        _id
+        name
+        email
+        documents {
+            _id
+            title
+            code
+        }
+    }
+}
